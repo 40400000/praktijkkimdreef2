@@ -92,3 +92,4 @@ When a client visits the booking page:
 - You can edit or delete VRIJ events anytime
 - The system automatically recalculates availability when you make changes
 
+

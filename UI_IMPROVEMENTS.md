@@ -122,3 +122,4 @@ Cannot be missed!
 ✅ **Reset Functionality**: "Nieuwe afspraak maken" properly resets all form state
 ✅ **Error Handling**: Errors still show as toast notifications (unchanged)
 
+

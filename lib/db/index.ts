@@ -12,3 +12,4 @@ export const db = drizzle(sql, { schema });
 export type DB = typeof db;
 export * from './schema';
 
+

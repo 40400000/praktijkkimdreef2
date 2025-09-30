@@ -84,3 +84,4 @@ This tells the system you're available before your normal working hours on that 
 - ✅ Users can book appointments on partially-booked days
 - ✅ Better user experience - no more greyed-out days with hidden slots
 
+

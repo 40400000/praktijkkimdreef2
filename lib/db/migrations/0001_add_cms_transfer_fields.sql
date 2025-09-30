@@ -7,3 +7,4 @@ ADD COLUMN transferred_at TIMESTAMP;
 COMMENT ON COLUMN appointments.transferred_to_cms IS 'Tracks if appointment has been manually transferred to CMS';
 COMMENT ON COLUMN appointments.transferred_at IS 'Timestamp when appointment was transferred to CMS';
 
+

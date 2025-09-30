@@ -90,3 +90,4 @@ To verify both calendars are being checked, look at the server console logs:
 - Both calendars must be accessible with the service account credentials
 - Events are deduplicated if they appear in both calendars (though this shouldn't happen)
 
+

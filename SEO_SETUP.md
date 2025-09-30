@@ -146,3 +146,4 @@ app/
 - [Google Search Central](https://developers.google.com/search)
 - [Schema.org](https://schema.org/)
 - [Open Graph Protocol](https://ogp.me/)
+
