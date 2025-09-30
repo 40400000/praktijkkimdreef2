@@ -1,5 +1,11 @@
 import { Euro, Phone, Car } from "lucide-react";
 import Accordion from "../../components/accordion";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Tarieven",
+  description: "Transparante prijzen voor orthomoleculaire therapie en homeopathie behandelingen. Veel behandelingen worden vergoed door zorgverzekeraars.",
+};
 
 export default function TarievenPage() {
   const orthomoleculairTarieven = [

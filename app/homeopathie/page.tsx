@@ -1,4 +1,10 @@
 import Image from "next/image";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Homeopathie",
+  description: "Klassieke veterinaire homeopathie voor dieren. Behandeling van chronische en acute klachten volgens natuurwetten.",
+};
 
 export default function HomeopathiePage() {
   return (

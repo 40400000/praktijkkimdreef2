@@ -1,4 +1,10 @@
 import Image from "next/image";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Orthomoleculaire therapie",
+  description: "Behandeling van chronische klachten door tekorten aan te vullen met voeding, beweging en supplementen. Geschikt voor o.a. fibromyalgie, vermoeidheid en maag-darmklachten.",
+};
 
 export default function OrthomoleculairPage() {
   const klachten: string[] = [

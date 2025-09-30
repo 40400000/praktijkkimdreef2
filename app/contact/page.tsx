@@ -1,5 +1,11 @@
 import Image from "next/image";
 import { Mail, Phone, MapPin } from "lucide-react";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Contact",
+  description: "Neem contact op met Praktijk Kim Dreef voor vragen over orthomoleculaire therapie en homeopathie. Gevestigd in Apeldoorn.",
+};
 
 export default function ContactPage() {
   return (

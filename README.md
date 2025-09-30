@@ -1,5 +1,30 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## SEO and Metadata
+
+This project includes comprehensive SEO optimization:
+
+### Features
+- **Meta tags**: Complete title, description, keywords for all pages
+- **Open Graph**: Social media preview images and metadata
+- **Twitter Cards**: Optimized sharing for Twitter/X
+- **Sitemap**: Auto-generated at `/sitemap.xml`
+- **Robots.txt**: Auto-generated at `/robots.txt`
+- **Structured data**: JSON-LD for local business and organization
+- **Manifest**: PWA-ready web app manifest
+
+### Environment Variables
+Create a `.env.local` file with:
+```bash
+NEXT_PUBLIC_SITE_URL=https://your-domain.com
+NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=your-verification-code
+```
+
+### Google Search Console
+1. Add your site to [Google Search Console](https://search.google.com/search-console)
+2. Copy the verification meta tag code
+3. Add it to `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` in `.env.local`
+
 ## Getting Started
 
 First, run the development server:

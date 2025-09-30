@@ -1,4 +1,10 @@
 import Image from "next/image";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Qest 4",
+  description: "Geavanceerde diagnose en gezondheidscheck met het Qest 4 systeem. Snel en pijnloos inzicht in uw gezondheidsstatus zonder bloedafname.",
+};
 
 export default function QestPage() {
   const voordelen: string[] = [
