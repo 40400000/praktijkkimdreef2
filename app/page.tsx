@@ -1,103 +1,151 @@
+import Navbar from "../components/navbar";
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen">
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      
+      {/* Hero Section */}
+      <section className="relative h-[calc(100vh-5rem)]">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 w-full h-full flex flex-col">
+          <div className="rounded-3xl pt-8 lg:pt-12 pb-4 lg:pb-6 px-8 lg:px-12 bg-[#899B90] flex-1 flex items-center mb-4 lg:mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className="space-y-8">
+              <h1 className="text-4xl lg:text-6xl font-light text-white leading-tight font-serif">
+                Praktijk Kim Dreef{" "}
+              </h1>
+              
+              <p className="text-xl lg:text-2xl text-white/90 leading-relaxed max-w-lg">
+              Praktijk voor orthomoleculaire therapie
+              en homeopathie voor mens & dier.              </p>
+              
+              <div className="pt-4">
+                <button className="inline-flex items-center px-8 py-3 border border-white/30 rounded-full text-base font-medium text-white bg-white/10 hover:bg-white/20 hover:cursor-pointer transition-colors duration-200">
+                  Afspraak maken
+                  <ArrowUpRight className="ml-3 w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            
+            {/* Right Content - Hero Image */}
+            <div className="relative">
+              <div className="relative rounded-2xl overflow-hidden">
+                <Image
+                  src="/kim_hero_foto.jpg"
+                  alt="Kim Dreef - Orthomoleculaire therapie en homeopathie"
+                  width={600}
+                  height={800}
+                  className="w-full h-auto object-cover"
+                  priority
+                />
+              </div>
+            </div>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+      {/* Diensten (korte samenvatting) */}
+      <section className="py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10 lg:mb-14">
+            <h2 className="text-3xl lg:text-4xl font-light text-gray-900">
+              Behandelingen
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+            {/* Homeopathie */}
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="relative h-56 lg:h-72">
+                <Image
+                  src="/homeo.jpg"
+                  alt="Homeopathie"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="p-6 lg:p-8">
+                <h3 className="text-2xl font-light text-gray-900 mb-3">Homeopathie</h3>
+                <p className="text-gray-600 leading-relaxed mb-6">
+                  De klassieke veterinaire homeopathie is een geneeswijze voor dieren die berust op vele natuurwetten.
+                </p>
+                <Link
+                  href="/homeopathie"
+                  className="inline-flex items-center text-gray-700 hover:text-gray-900 font-medium transition-colors duration-200"
+                >
+                  Lees meer
+                  <ArrowUpRight className="ml-2 w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Orthomoleculaire therapie */}
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="relative h-56 lg:h-72">
+                <Image
+                  src="/ortho.jpeg"
+                  alt="Orthomoleculaire therapie"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="p-6 lg:p-8">
+                <h3 className="text-2xl font-light text-gray-900 mb-3">Orthomoleculaire therapie</h3>
+                <p className="text-gray-600 leading-relaxed mb-6">
+                  Tekorten in het lichaam die voor klachten zorgen weer aanvullen met voeding, beweging en supplementen.
+                </p>
+                <Link
+                  href="/orthomoleculair"
+                  className="inline-flex items-center text-gray-700 hover:text-gray-900 font-medium transition-colors duration-200"
+                >
+                  Lees meer
+                  <ArrowUpRight className="ml-2 w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Qest 4 Section */}
+      <section className="py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-[#899B90] rounded-3xl p-8 lg:p-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+              {/* Left Content */}
+              <div className="space-y-6">
+                <h3 className="text-3xl lg:text-4xl font-light text-white">Qest 4</h3>
+                <p className="text-xl text-white/90 leading-relaxed">
+                De test met de Qest4 is erop gericht verstoringen op te sporen en te zoeken naar wat het lichaam nodig heeft om weer in balans te komen.                </p>
+                <Link
+                  href="/qest"
+                  className="inline-flex items-center px-6 py-3 border border-white/30 rounded-full text-base font-medium text-white bg-white/10 hover:bg-white/20 hover:cursor-pointer transition-colors duration-200"
+                >
+                  Meer informatie
+                  <ArrowUpRight className="ml-3 w-5 h-5" />
+                </Link>
+              </div>
+              
+              {/* Right Content - Qest 4 Image */}
+              <div className="relative">
+                <div className="relative rounded-2xl overflow-hidden aspect-[4/3]">
+                  <Image
+                    src="/qest4.jpg"
+                    alt="Qest 4 systeem"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
