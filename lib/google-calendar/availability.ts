@@ -110,6 +110,92 @@ export class AvailabilityService {
     });
   }
 
+  // Get availability for a specific date with debug info
+  async debugDateAvailability(
+    date: Date,
+    options: AvailabilityOptions
+  ): Promise<any> {
+    const { treatmentDuration, bufferTime = 15 } = options;
+    const dayOfWeek = date.getDay();
+    const workingHours = await this.getWorkingHours(dayOfWeek);
+
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    
+    const startOfDay = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T00:00:00+02:00`);
+    const endOfDay = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T23:59:59+02:00`);
+    
+    const events = await this.calendarService.getEvents(startOfDay, endOfDay);
+    const vrijEvents = this.findVrijEvents(events);
+    
+    if (!workingHours && vrijEvents.length === 0) {
+      return {
+        message: "No working hours and no VRIJ events for this day",
+        workingHours: null,
+        vrijEvents: [],
+        events: events,
+        slots: [],
+      };
+    }
+    
+    let extendedHours: { startTime: string; endTime: string };
+    let baseHoursInfo = workingHours ? `${workingHours.startTime} - ${workingHours.endTime}` : 'None';
+    let extendedHoursInfo = 'Not extended';
+
+    if (workingHours) {
+      extendedHours = this.calculateExtendedHours(workingHours, vrijEvents, date);
+      if (vrijEvents.length > 0) {
+        extendedHoursInfo = `${extendedHours.startTime} - ${extendedHours.endTime}`;
+      }
+    } else {
+      extendedHours = this.calculateVrijOnlyHours(vrijEvents, date);
+      extendedHoursInfo = `VRIJ only: ${extendedHours.startTime} - ${extendedHours.endTime}`;
+    }
+    
+    const blockingEvents = events.filter(event => !this.isVrijEvent(event));
+    
+    const timeSlots = this.generateTimeSlots(
+      extendedHours.startTime,
+      extendedHours.endTime,
+      treatmentDuration,
+      bufferTime
+    );
+
+    const slotsWithDebug = timeSlots.map(slot => {
+      const slotStart = this.parseTimeToDate(date, slot.time);
+      const slotEnd = new Date(slotStart.getTime() + treatmentDuration * 60000);
+      const slotEndWithBuffer = new Date(slotEnd.getTime() + bufferTime * 60000);
+      
+      const conflictingEvent = this.findConflictingEvent(blockingEvents, slotStart, slotEndWithBuffer);
+      
+      return {
+        time: slot.time,
+        available: !conflictingEvent,
+        isBlocked: conflictingEvent ? this.isBlockedEvent(conflictingEvent) : false,
+        conflictingEvent: conflictingEvent ? {
+          summary: conflictingEvent.summary,
+          start: conflictingEvent.start?.dateTime,
+          end: conflictingEvent.end?.dateTime,
+        } : null,
+      };
+    });
+
+    return {
+      date: date.toDateString(),
+      dayOfWeek: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayOfWeek],
+      treatmentDuration: treatmentDuration,
+      bufferTime: bufferTime,
+      workingHours: workingHours,
+      baseHoursInfo: baseHoursInfo,
+      vrijEvents: vrijEvents.map(e => ({ summary: e.summary, start: e.start?.dateTime, end: e.end?.dateTime })),
+      extendedHours: extendedHoursInfo,
+      events: events.map(e => ({ summary: e.summary, start: e.start?.dateTime, end: e.end?.dateTime })),
+      blockingEvents: blockingEvents.map(e => ({ summary: e.summary, start: e.start?.dateTime, end: e.end?.dateTime })),
+      slots: slotsWithDebug,
+    };
+  }
+
   // Get availability for multiple dates (for calendar view)
   async getMonthAvailability(
     year: number,
