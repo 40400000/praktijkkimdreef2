@@ -46,12 +46,13 @@ export class AvailabilityService {
       console.log(`⚠️  No base working hours for day ${dayOfWeek} - checking for VRIJ events...`);
     }
 
-    // Get all calendar events for this date
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
+    // Get all calendar events for this date in Amsterdam timezone
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
     
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+    const startOfDay = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T00:00:00+02:00`);
+    const endOfDay = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T23:59:59+02:00`);
     
     console.log(`🔍 Fetching calendar events for availability check...`);
     const events = await this.calendarService.getEvents(startOfDay, endOfDay);
@@ -118,8 +119,10 @@ export class AvailabilityService {
     const functionStart = performance.now();
     console.log(`\n🗓️  [getMonthAvailability] Starting for ${year}-${month + 1}`);
     
-    const startOfMonth = new Date(year, month, 1);
+    // Create month boundaries in Amsterdam timezone
+    const startOfMonth = new Date(`${year}-${String(month + 1).padStart(2, '0')}-01T00:00:00+02:00`);
     const endOfMonth = new Date(year, month + 1, 0);
+    endOfMonth.setHours(23, 59, 59, 999);
     
     console.log(`⏱️  [getMonthAvailability] Fetching calendar events...`);
     const eventsStart = performance.now();
@@ -226,9 +229,17 @@ export class AvailabilityService {
 
   private parseTimeToDate(date: Date, time: string): Date {
     const [hours, minutes] = time.split(':').map(Number);
-    const result = new Date(date);
-    result.setHours(hours, minutes, 0, 0);
-    return result;
+    
+    // Create date in Amsterdam timezone to match Google Calendar events
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+    
+    // Create date string in Amsterdam timezone format (Europe/Amsterdam)
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+    
+    // Parse as Amsterdam timezone (this handles DST automatically)
+    return new Date(dateStr + '+02:00'); // Europe/Amsterdam timezone offset (DST in October)
   }
 
   private findConflictingEvent(

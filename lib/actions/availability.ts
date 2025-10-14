@@ -44,9 +44,9 @@ export async function getAvailableTimeSlots(
 
     console.log(`✅ Treatment found: ${treatment[0].label} (${treatment[0].duration} minutes)`);
 
-    // Parse date string as local date to avoid timezone issues
+    // Parse date string in Amsterdam timezone to match Google Calendar events
     const [year, month, day] = date.split('-').map(Number);
-    const appointmentDate = new Date(year, month - 1, day);
+    const appointmentDate = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T00:00:00+02:00`);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 

@@ -24,10 +24,13 @@ export default function Home() {
               en homeopathie voor mens & dier.              </p>
               
               <div className="pt-4">
-                <button className="inline-flex items-center px-8 py-3 border border-white/30 rounded-full text-base font-medium text-white bg-white/10 hover:bg-white/20 hover:cursor-pointer transition-colors duration-200">
+                <Link
+                  href="/afspraak-maken"
+                  className="inline-flex items-center px-8 py-3 border border-white/30 rounded-full text-base font-medium text-white bg-white/10 hover:bg-white/20 hover:cursor-pointer transition-colors duration-200"
+                >
                   Afspraak maken
                   <ArrowUpRight className="ml-3 w-5 h-5" />
-                </button>
+                </Link>
               </div>
             </div>
             
