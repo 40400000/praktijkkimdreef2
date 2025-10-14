@@ -16,12 +16,6 @@ const nextConfig: NextConfig = {
         destination: '/orthomoleculair',
         permanent: true,
       },
-      // Homeopathie redirect
-      {
-        source: '/homeopathie',
-        destination: '/homeopathie',
-        permanent: true,
-      },
       // Qest4 redirect
       {
         source: '/qest4',
@@ -32,12 +26,6 @@ const nextConfig: NextConfig = {
       {
         source: '/over-mij',
         destination: '/',
-        permanent: true,
-      },
-      // Tarieven redirect
-      {
-        source: '/tarieven',
-        destination: '/tarieven',
         permanent: true,
       },
     ];

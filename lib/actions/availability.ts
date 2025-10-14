@@ -56,12 +56,33 @@ export async function getAvailableTimeSlots(
       return [];
     }
 
-    console.log('🚀 Calling Google Calendar availability service...');
-    // Get availability from Google Calendar
-    const slots = await availabilityService.getDateAvailability(appointmentDate, {
+    console.log('🚀 Calling Google Calendar availability service (using debug function)...');
+    // Get availability from Google Calendar using debug function for consistency
+    const debugInfo = await availabilityService.debugDateAvailability(appointmentDate, {
       treatmentDuration: treatment[0].duration,
       bufferTime: 15, // 15 minutes between appointments
     });
+
+    let slots: TimeSlot[] = debugInfo.slots.map((slot: any) => ({
+      time: slot.time,
+      available: slot.available,
+      isBlocked: slot.isBlocked,
+      eventSummary: slot.conflictingEvent?.summary,
+    }));
+
+    // Filter out past time slots on the current day
+    const now = new Date();
+    if (
+      appointmentDate.getFullYear() === now.getFullYear() &&
+      appointmentDate.getMonth() === now.getMonth() &&
+      appointmentDate.getDate() === now.getDate()
+    ) {
+      const currentTime = now.getHours() * 60 + now.getMinutes();
+      slots = slots.filter(slot => {
+        const [hours, minutes] = slot.time.split(':').map(Number);
+        return hours * 60 + minutes > currentTime;
+      });
+    }
 
     console.log(`✅ Got ${slots.length} time slots from Google Calendar`);
     const availableSlots = slots.filter(slot => slot.available);
