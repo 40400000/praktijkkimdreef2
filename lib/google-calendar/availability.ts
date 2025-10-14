@@ -396,83 +396,25 @@ export class AvailabilityService {
     monthEvents: calendar_v3.Schema$Event[],
     treatmentDuration: number = 60
   ): Promise<boolean> {
-    const dayOfWeek = date.getDay();
-    const workingHours = await this.getWorkingHours(dayOfWeek);
+    // Use the SAME logic as getDateAvailability for consistency
+    // This ensures month view and day view always match
     
-    // Safety check for monthEvents
-    if (!monthEvents || !Array.isArray(monthEvents)) {
-      console.warn('⚠️  monthEvents is undefined or not an array');
-      return false;
-    }
-    
-    // Filter events for this specific date
-    const targetDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    
-    const dayEvents = monthEvents.filter(event => {
-      if (!event.start?.dateTime) return false;
-      const eventDate = new Date(event.start.dateTime);
-      const eventDateStr = `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}-${String(eventDate.getDate()).padStart(2, '0')}`;
-      return eventDateStr === targetDateStr;
-    });
-    
-    // Check for VRIJ events - if present, day has availability even without base working hours
-    const vrijEvents = this.findVrijEvents(dayEvents);
-    
-    
-    if (!workingHours && vrijEvents.length === 0) {
-      return false; // No working hours and no VRIJ events
-    }
-    
-    // Calculate effective working hours
-    let effectiveWorkingHours: { startTime: string; endTime: string };
-    
-    if (workingHours) {
-      // Normal case: extend base working hours with VRIJ events
-      effectiveWorkingHours = vrijEvents.length > 0 
-        ? this.calculateExtendedHours(workingHours, vrijEvents, date)
-        : workingHours;
-    } else {
-      // Weekend/no base hours: use VRIJ events only
-      effectiveWorkingHours = this.calculateVrijOnlyHours(vrijEvents, date);
-    }
-    
-    // Filter out VRIJ events from blocking events
-    const blockingEvents = dayEvents.filter(event => !this.isVrijEvent(event));
-    
-    // Quick check: if no blocking events, there's availability
-    if (blockingEvents.length === 0) return true;
-    
-    // Use the provided treatment duration
-    const bufferTime = 15;
-    
-    // Generate slots using the SAME logic as getDateAvailability
-    const slots = this.generateTimeSlots(
-      effectiveWorkingHours.startTime,
-      effectiveWorkingHours.endTime,
-      treatmentDuration,
-      bufferTime
-    );
-    
-    console.log(`🔍 [hasAnyAvailability] Checking ${date.toDateString()}: ${slots.length} slots, ${blockingEvents.length} blocking events, hours: ${effectiveWorkingHours.startTime}-${effectiveWorkingHours.endTime}`);
-    
-    // Check if at least one slot is available
-    let availableCount = 0;
-    for (const slot of slots) {
-      const slotStart = this.parseTimeToDate(date, slot.time);
-      const slotEnd = new Date(slotStart.getTime() + treatmentDuration * 60000);
-      // Add buffer to the slot end to ensure gap between appointments
-      const slotEndWithBuffer = new Date(slotEnd.getTime() + bufferTime * 60000);
+    try {
+      const slots = await this.getDateAvailability(date, {
+        treatmentDuration,
+        bufferTime: 15
+      });
       
-      const conflictingEvent = this.findConflictingEvent(blockingEvents, slotStart, slotEndWithBuffer);
+      // Check if any slots are available
+      const hasAvailability = slots.some(slot => slot.available);
       
-      if (!conflictingEvent) {
-        availableCount++;
-      }
+      console.log(`📊 [hasAnyAvailability] Result for ${date.toDateString()}: ${slots.filter(s => s.available).length}/${slots.length} available slots`);
+      
+      return hasAvailability;
+    } catch (error) {
+      console.error(`❌ [hasAnyAvailability] Error for ${date.toDateString()}:`, error);
+      return false; // Default to no availability on error
     }
-    
-    console.log(`📊 [hasAnyAvailability] Result for ${date.toDateString()}: ${availableCount} available slots found`);
-    
-    return availableCount > 0;
   }
 
   private getWorkingMinutes(startTime: string, endTime: string): number {
