@@ -81,7 +81,8 @@ export async function getAvailableTimeSlots(
 // Get calendar data with availability for a specific month
 export async function getCalendarAvailability(
   year: number,
-  month: number
+  month: number,
+  treatmentDuration: number = 60
 ): Promise<CalendarDay[]> {
   const functionStart = performance.now();
   console.log(`\n📅 [getCalendarAvailability] Starting for ${year}-${month + 1}`);
@@ -101,7 +102,7 @@ export async function getCalendarAvailability(
     const availStart = performance.now();
     
     // Get availability data from Google Calendar for the month
-    const monthAvailability = await availabilityService.getMonthAvailability(year, month);
+    const monthAvailability = await availabilityService.getMonthAvailability(year, month, treatmentDuration);
     
     const availEnd = performance.now();
     console.log(`✅ [getCalendarAvailability] Month availability fetched in ${(availEnd - availStart).toFixed(0)}ms`);

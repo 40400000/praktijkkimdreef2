@@ -93,3 +93,7 @@ When a client visits the booking page:
 - The system automatically recalculates availability when you make changes
 
 
+
+
+
+

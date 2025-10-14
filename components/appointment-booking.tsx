@@ -69,9 +69,15 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
       setCalendarData([]); // Clear old data to show skeleton
       
       try {
+        // Get treatment duration for calendar availability
+        const treatmentDuration = selectedTreatment 
+          ? treatments.find(t => t.value === selectedTreatment)?.duration || 60
+          : 60; // Default to 60 minutes if no treatment selected
+        
         const calendar = await getCalendarAvailability(
           currentMonth.getFullYear(),
-          currentMonth.getMonth()
+          currentMonth.getMonth(),
+          treatmentDuration
         );
         const endTime = performance.now();
         console.log(`✅ [UI] Calendar loaded in ${(endTime - startTime).toFixed(0)}ms`);
@@ -83,7 +89,7 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
       }
     }
     loadCalendarData();
-  }, [currentMonth]);
+  }, [currentMonth, selectedTreatment, treatments]);
 
   // Load time slots when date changes
   useEffect(() => {

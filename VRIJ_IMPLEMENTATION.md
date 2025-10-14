@@ -136,3 +136,7 @@ Everything is working and tested! Just create VRIJ events in your Google Calenda
 For questions or issues, check the logs in the browser console or server terminal - they show detailed information about VRIJ event detection and hour calculations.
 
 
+
+
+
+

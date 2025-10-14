@@ -8,3 +8,7 @@ COMMENT ON COLUMN appointments.transferred_to_cms IS 'Tracks if appointment has 
 COMMENT ON COLUMN appointments.transferred_at IS 'Timestamp when appointment was transferred to CMS';
 
 
+
+
+
+

@@ -112,7 +112,8 @@ export class AvailabilityService {
   // Get availability for multiple dates (for calendar view)
   async getMonthAvailability(
     year: number,
-    month: number
+    month: number,
+    treatmentDuration: number = 60
   ): Promise<Record<string, boolean>> {
     const functionStart = performance.now();
     console.log(`\n🗓️  [getMonthAvailability] Starting for ${year}-${month + 1}`);
@@ -152,7 +153,7 @@ export class AvailabilityService {
       
       // Check if there are any available slots (quick check)
       // NOTE: hasAnyAvailability checks working hours internally and handles VRIJ events
-      const hasAvailability = await this.hasAnyAvailability(currentDate, events);
+      const hasAvailability = await this.hasAnyAvailability(currentDate, events, treatmentDuration);
       availability[dateStr] = hasAvailability;
     }
     
@@ -381,7 +382,8 @@ export class AvailabilityService {
 
   private async hasAnyAvailability(
     date: Date,
-    monthEvents: calendar_v3.Schema$Event[]
+    monthEvents: calendar_v3.Schema$Event[],
+    treatmentDuration: number = 60
   ): Promise<boolean> {
     const dayOfWeek = date.getDay();
     const workingHours = await this.getWorkingHours(dayOfWeek);
@@ -429,12 +431,15 @@ export class AvailabilityService {
     // Quick check: if no blocking events, there's availability
     if (blockingEvents.length === 0) return true;
     
+    // Use the provided treatment duration
+    const bufferTime = 15;
+    
     // Generate slots using the SAME logic as getDateAvailability
     const slots = this.generateTimeSlots(
       effectiveWorkingHours.startTime,
       effectiveWorkingHours.endTime,
-      60, // treatmentDuration
-      15  // bufferTime
+      treatmentDuration,
+      bufferTime
     );
     
     console.log(`🔍 [hasAnyAvailability] Checking ${date.toDateString()}: ${slots.length} slots, ${blockingEvents.length} blocking events, hours: ${effectiveWorkingHours.startTime}-${effectiveWorkingHours.endTime}`);
@@ -443,9 +448,11 @@ export class AvailabilityService {
     let availableCount = 0;
     for (const slot of slots) {
       const slotStart = this.parseTimeToDate(date, slot.time);
-      const slotEnd = new Date(slotStart.getTime() + 60 * 60000); // 60-minute appointment
+      const slotEnd = new Date(slotStart.getTime() + treatmentDuration * 60000);
+      // Add buffer to the slot end to ensure gap between appointments
+      const slotEndWithBuffer = new Date(slotEnd.getTime() + bufferTime * 60000);
       
-      const conflictingEvent = this.findConflictingEvent(blockingEvents, slotStart, slotEnd);
+      const conflictingEvent = this.findConflictingEvent(blockingEvents, slotStart, slotEndWithBuffer);
       
       if (!conflictingEvent) {
         availableCount++;
