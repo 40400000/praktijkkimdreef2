@@ -215,8 +215,8 @@ export class AvailabilityService {
     const functionStart = performance.now();
     console.log(`\n🗓️  [debugMonthAvailability] Starting for ${year}-${month + 1}`);
     
-    // Create month boundaries in Amsterdam timezone
-    const startOfMonth = new Date(`${year}-${String(month + 1).padStart(2, '0')}-01T00:00:00+02:00`);
+    // Create month boundaries in local timezone
+    const startOfMonth = new Date(year, month, 1);
     const endOfMonth = new Date(year, month + 1, 0);
     endOfMonth.setHours(23, 59, 59, 999);
     
