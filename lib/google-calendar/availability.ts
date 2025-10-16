@@ -48,11 +48,11 @@ export class AvailabilityService {
 
     // Get all calendar events for this date in Amsterdam timezone
     const year = date.getFullYear();
-    const month = date.getMonth() + 1;
+    const month = date.getMonth();
     const day = date.getDate();
     
-    const startOfDay = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T00:00:00+02:00`);
-    const endOfDay = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T23:59:59+02:00`);
+    const startOfDay = new Date(year, month, day, 0, 0, 0);
+    const endOfDay = new Date(year, month, day, 23, 59, 59);
     
     console.log(`🔍 Fetching calendar events for availability check...`);
     const events = await this.calendarService.getEvents(startOfDay, endOfDay);
@@ -125,11 +125,11 @@ export class AvailabilityService {
     const workingHours = await this.getWorkingHours(dayOfWeek);
 
     const year = date.getFullYear();
-    const month = date.getMonth() + 1;
+    const month = date.getMonth();
     const day = date.getDate();
     
-    const startOfDay = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T00:00:00+02:00`);
-    const endOfDay = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T23:59:59+02:00`);
+    const startOfDay = new Date(year, month, day, 0, 0, 0);
+    const endOfDay = new Date(year, month, day, 23, 59, 59);
     
     const events = await this.calendarService.getEvents(startOfDay, endOfDay);
     const vrijEvents = this.findVrijEvents(events);

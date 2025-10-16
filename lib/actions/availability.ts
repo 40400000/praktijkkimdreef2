@@ -45,7 +45,8 @@ export async function getAvailableTimeSlots(
     console.log(`✅ Treatment found: ${treatment[0].label} (${treatment[0].duration} minutes)`);
 
     // Parse date string in Amsterdam timezone to match Google Calendar events
-    const appointmentDate = new Date(`${date}T00:00:00`);
+    const [year, month, day] = date.split('-').map(Number);
+    const appointmentDate = new Date(year, month - 1, day, 0, 0, 0);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
