@@ -48,11 +48,11 @@ export class AvailabilityService {
 
     // Get all calendar events for this date in Amsterdam timezone
     const year = date.getFullYear();
-    const month = date.getMonth();
+    const month = date.getMonth() + 1;
     const day = date.getDate();
     
-    const startOfDay = new Date(year, month, day, 0, 0, 0);
-    const endOfDay = new Date(year, month, day, 23, 59, 59);
+    const startOfDay = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T00:00:00+02:00`);
+    const endOfDay = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T23:59:59+02:00`);
     
     console.log(`🔍 Fetching calendar events for availability check...`);
     const events = await this.calendarService.getEvents(startOfDay, endOfDay);
@@ -125,11 +125,11 @@ export class AvailabilityService {
     const workingHours = await this.getWorkingHours(dayOfWeek);
 
     const year = date.getFullYear();
-    const month = date.getMonth();
+    const month = date.getMonth() + 1;
     const day = date.getDate();
     
-    const startOfDay = new Date(year, month, day, 0, 0, 0);
-    const endOfDay = new Date(year, month, day, 23, 59, 59);
+    const startOfDay = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T00:00:00+02:00`);
+    const endOfDay = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T23:59:59+02:00`);
     
     const events = await this.calendarService.getEvents(startOfDay, endOfDay);
     const vrijEvents = this.findVrijEvents(events);
@@ -391,9 +391,15 @@ export class AvailabilityService {
     const [hours, minutes] = time.split(':').map(Number);
     
     // Create date in Amsterdam timezone to match Google Calendar events
-    const newDate = new Date(date);
-    newDate.setHours(hours, minutes, 0, 0);
-    return newDate;
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+    
+    // Create date string in Amsterdam timezone format to match Google Calendar events
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+    
+    // Parse as Amsterdam timezone (this handles DST automatically)
+    return new Date(dateStr + '+02:00'); // Europe/Amsterdam timezone offset
   }
 
   private findConflictingEvent(
