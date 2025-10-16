@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Clock, User, MessageSquare, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Mail, ArrowUpRight, ChevronDown } from "lucide-react";
-import { getAvailableTimeSlots, getCalendarAvailability, getTreatments, type TimeSlot, type CalendarDay } from "@/lib/actions/availability";
+import { getAvailableTimeSlots, getCalendarAvailability, getFirstAvailableSlots, getTreatments, type TimeSlot, type CalendarDay, type QuickPickSlot } from "@/lib/actions/availability";
 import { createAppointment, type AppointmentData } from "@/lib/actions/appointments";
 import { Treatment } from "@/lib/db";
 
@@ -44,7 +44,11 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<Record<string, any>>({});
+  const [showDebugInfo, setShowDebugInfo] = useState(false);
   const timeSlotsContainerRef = useRef<HTMLDivElement>(null);
+  const [quickPickSlots, setQuickPickSlots] = useState<QuickPickSlot[]>([]);
+  const [loadingQuickPicks, setLoadingQuickPicks] = useState(false);
 
   // Load treatments on component mount
   useEffect(() => {
@@ -67,6 +71,7 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
       
       setLoading(true);
       setCalendarData([]); // Clear old data to show skeleton
+      setDebugInfo({}); // Clear debug info
       
       try {
         // Get treatment duration for calendar availability
@@ -79,8 +84,23 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
           currentMonth.getMonth(),
           treatmentDuration
         );
+        
+        // Fetch debug info for the entire month (only in development)
+        if (process.env.NODE_ENV === 'development') {
+          try {
+            const response = await fetch(`/api/debug-availability?date=${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-01&duration=${treatmentDuration}&month=true`);
+            if (response.ok) {
+              const monthDebugInfo = await response.json();
+              setDebugInfo(monthDebugInfo);
+            }
+          } catch (error) {
+            console.error('Error fetching month debug info:', error);
+            setDebugInfo({ error: 'Failed to fetch month debug info' });
+          }
+        }
         const endTime = performance.now();
         console.log(`✅ [UI] Calendar loaded in ${(endTime - startTime).toFixed(0)}ms`);
+        console.log(`🔍 [UI] Calendar data:`, calendar.filter(d => d.isCurrentMonth).map(d => ({ date: d.date, hasAvailability: d.hasAvailability })));
         setCalendarData(calendar);
       } catch (error) {
         console.error('Error loading calendar data:', error);
@@ -91,13 +111,34 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
     loadCalendarData();
   }, [currentMonth, selectedTreatment, treatments]);
 
+  useEffect(() => {
+    async function loadQuickPicks() {
+      if (selectedTreatment) {
+        setLoadingQuickPicks(true);
+        setQuickPickSlots([]);
+        try {
+          const slots = await getFirstAvailableSlots(selectedTreatment);
+          setQuickPickSlots(slots);
+        } catch (error) {
+          console.error('Error loading quick pick slots:', error);
+        } finally {
+          setLoadingQuickPicks(false);
+        }
+      }
+    }
+    loadQuickPicks();
+  }, [selectedTreatment, treatments]);
+
   // Load time slots when date changes
   useEffect(() => {
     async function loadTimeSlots() {
       if (appointmentData.date && selectedTreatment) {
+        console.log(`🔍 [UI] Loading time slots for ${appointmentData.date} with treatment ${selectedTreatment}`);
         setLoading(true);
         try {
           const slots = await getAvailableTimeSlots(appointmentData.date, selectedTreatment);
+          console.log(`✅ [UI] Received ${slots.length} time slots, ${slots.filter(s => s.available).length} available`);
+          console.log(`🔍 [UI] Time slots:`, slots);
           setTimeSlots(slots);
         } catch (error) {
           console.error('Error loading time slots:', error);
@@ -161,6 +202,19 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
 
   const handleTimeSelect = (time: string) => {
     setAppointmentData({ ...appointmentData, time });
+  };
+
+  const handleQuickPickSelect = (date: string, time: string) => {
+    const [year, month] = date.split('-').map(Number);
+    const newMonthDate = new Date(year, month - 1, 1);
+
+    // Check if we need to change the month in the calendar view
+    if (newMonthDate.getFullYear() !== currentMonth.getFullYear() || newMonthDate.getMonth() !== currentMonth.getMonth()) {
+      setCurrentMonth(newMonthDate);
+    }
+    
+    // Set date and time for the appointment
+    setAppointmentData({ ...appointmentData, date, time });
   };
 
   // Month navigation functions
@@ -606,6 +660,158 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
                             )}
                           </div>
                         </div>
+
+                        {/* Quick Picks Section */}
+                        {subStep === 2 && (
+                          <div className="mt-8 pt-8 border-t border-gray-200">
+                            <h3 className="text-base font-medium text-gray-800 mb-4 text-center">Of kies een van de eerstvolgende mogelijkheden:</h3>
+                            {loadingQuickPicks ? (
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {/* Skeletons */}
+                                <div className="h-20 bg-gray-100 rounded-xl animate-pulse" />
+                                <div className="h-20 bg-gray-100 rounded-xl animate-pulse" />
+                                <div className="h-20 bg-gray-100 rounded-xl animate-pulse" />
+                              </div>
+                            ) : quickPickSlots.length > 0 ? (
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {quickPickSlots.map((slot) => (
+                                  <motion.button
+                                    key={`${slot.date}-${slot.time}`}
+                                    type="button"
+                                    onClick={() => handleQuickPickSelect(slot.date, slot.time)}
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="p-4 border border-gray-200 rounded-xl text-center hover:border-[#899B90] hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#899B90] focus:ring-offset-2"
+                                  >
+                                    <div className="font-medium text-gray-900 text-sm">
+                                      {new Date(`${slot.date}T00:00:00`).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'short' })}
+                                    </div>
+                                    <div className="text-xl text-[#899B90] font-bold mt-1">{slot.time}</div>
+                                  </motion.button>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-center text-gray-500 text-sm">Geen beschikbare tijden gevonden in de komende 3 maanden.</p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Debug Information Toggle - Only show in development */}
+                        {process.env.NODE_ENV === 'development' && (
+                          <div className="mt-4 flex justify-center">
+                            <button
+                              type="button"
+                              onClick={() => setShowDebugInfo(!showDebugInfo)}
+                              className="inline-flex items-center px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200 border border-gray-300 rounded-lg hover:bg-gray-50"
+                            >
+                              {showDebugInfo ? 'Hide' : 'Show'} Debug Info
+                              <ChevronDown className={`ml-2 w-4 h-4 transition-transform duration-200 ${showDebugInfo ? 'rotate-180' : ''}`} />
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Debug Information Panel - Only show in development */}
+                        {process.env.NODE_ENV === 'development' && showDebugInfo && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="mt-4 border border-gray-200 rounded-lg p-4 bg-gray-50"
+                          >
+                            <h4 className="text-sm font-medium text-gray-900 mb-3">Debug Information</h4>
+                            <div className="space-y-3 max-h-96 overflow-y-auto">
+                              {calendarData
+                                .filter(day => day.isCurrentMonth)
+                                .map((day) => {
+                                  const dayDebugInfo = debugInfo[day.date];
+                                  if (!dayDebugInfo) return null;
+                                  
+                                  return (
+                                    <div key={day.date} className="border border-gray-200 rounded p-3 bg-white">
+                                      <div className="flex items-center justify-between mb-2">
+                                        <span className="font-medium text-sm">
+                                          {new Date(day.date).toLocaleDateString('nl-NL', { 
+                                            weekday: 'short', 
+                                            day: 'numeric', 
+                                            month: 'short' 
+                                          })}
+                                        </span>
+                                        <span className={`text-xs px-2 py-1 rounded ${
+                                          day.hasAvailability 
+                                            ? 'bg-green-100 text-green-800' 
+                                            : 'bg-red-100 text-red-800'
+                                        }`}>
+                                          {day.hasAvailability ? 'Available' : 'Not Available'}
+                                        </span>
+                                      </div>
+                                      
+                                      {dayDebugInfo.error ? (
+                                        <p className="text-xs text-red-600">{dayDebugInfo.error}</p>
+                                      ) : (
+                                        <div className="space-y-2 text-xs">
+                                          <div>
+                                            <span className="font-medium">Day of Week:</span> {dayDebugInfo.dayOfWeek}
+                                          </div>
+                                          <div>
+                                            <span className="font-medium">Base Hours:</span> {dayDebugInfo.baseHoursInfo}
+                                          </div>
+                                          <div>
+                                            <span className="font-medium">Extended Hours:</span> {dayDebugInfo.extendedHours}
+                                          </div>
+                                          
+                                          {dayDebugInfo.vrijEvents && dayDebugInfo.vrijEvents.length > 0 && (
+                                            <div>
+                                              <span className="font-medium">VRIJ Events:</span>
+                                              <ul className="ml-2 mt-1">
+                                                {dayDebugInfo.vrijEvents.map((event: any, idx: number) => (
+                                                  <li key={idx} className="text-green-600">
+                                                    {event.summary} ({typeof event.start === 'string' ? event.start : event.start?.dateTime || 'N/A'} - {typeof event.end === 'string' ? event.end : event.end?.dateTime || 'N/A'})
+                                                  </li>
+                                                ))}
+                                              </ul>
+                                            </div>
+                                          )}
+                                          
+                                          {dayDebugInfo.events && dayDebugInfo.events.length > 0 && (
+                                            <div>
+                                              <span className="font-medium">All Events:</span>
+                                              <ul className="ml-2 mt-1 max-h-20 overflow-y-auto">
+                                                {dayDebugInfo.events.map((event: any, idx: number) => (
+                                                  <li key={idx} className="text-gray-600">
+                                                    {event.summary} ({typeof event.start === 'string' ? event.start : event.start?.dateTime || 'N/A'} - {typeof event.end === 'string' ? event.end : event.end?.dateTime || 'N/A'})
+                                                  </li>
+                                                ))}
+                                              </ul>
+                                            </div>
+                                          )}
+                                          
+                                          <div>
+                                            <span className="font-medium">Available Slots:</span> {dayDebugInfo.slots?.filter((slot: any) => slot.available).length || 0} / {dayDebugInfo.slots?.length || 0}
+                                          </div>
+                                          
+                                          {dayDebugInfo.slots && dayDebugInfo.slots.filter((slot: any) => slot.available).length > 0 && (
+                                            <div>
+                                              <span className="font-medium">Available Times:</span>
+                                              <ul className="ml-2 mt-1">
+                                                {dayDebugInfo.slots
+                                                  .filter((slot: any) => slot.available)
+                                                  .map((slot: any, idx: number) => (
+                                                    <li key={idx} className="text-green-600">
+                                                      {slot.time}
+                                                    </li>
+                                                  ))}
+                                              </ul>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                            </div>
+                          </motion.div>
+                        )}
 
                         {/* Time Selection - Show on the right when date is selected */}
                         {appointmentData.date && (

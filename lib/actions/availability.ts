@@ -21,6 +21,11 @@ export interface CalendarDay {
   isToday: boolean;
 }
 
+export interface QuickPickSlot {
+  date: string;
+  time: string;
+}
+
 // Get available time slots for a specific date and treatment
 export async function getAvailableTimeSlots(
   date: string,
@@ -45,8 +50,7 @@ export async function getAvailableTimeSlots(
     console.log(`✅ Treatment found: ${treatment[0].label} (${treatment[0].duration} minutes)`);
 
     // Parse date string in Amsterdam timezone to match Google Calendar events
-    const [year, month, day] = date.split('-').map(Number);
-    const appointmentDate = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T00:00:00+02:00`);
+    const appointmentDate = new Date(`${date}T00:00:00`);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -57,10 +61,17 @@ export async function getAvailableTimeSlots(
     }
 
     console.log('🚀 Calling Google Calendar availability service (using debug function)...');
+    console.log(`🔍 [getAvailableTimeSlots] Date being passed:`, appointmentDate.toISOString());
     // Get availability from Google Calendar using debug function for consistency
     const debugInfo = await availabilityService.debugDateAvailability(appointmentDate, {
       treatmentDuration: treatment[0].duration,
       bufferTime: 15, // 15 minutes between appointments
+    });
+
+    console.log(`🔍 [getAvailableTimeSlots] Debug info received:`, {
+      hasSlots: !!debugInfo.slots,
+      slotsLength: debugInfo.slots?.length || 0,
+      slots: debugInfo.slots?.slice(0, 3) // Show first 3 slots
     });
 
     let slots: TimeSlot[] = debugInfo.slots.map((slot: any) => ({
@@ -127,6 +138,8 @@ export async function getCalendarAvailability(
     
     const availEnd = performance.now();
     console.log(`✅ [getCalendarAvailability] Month availability fetched in ${(availEnd - availStart).toFixed(0)}ms`);
+    console.log(`🔍 [getCalendarAvailability] Month availability data:`, Object.keys(monthAvailability).length, 'days');
+    console.log(`🔍 [getCalendarAvailability] Available days:`, Object.entries(monthAvailability).filter(([_, available]) => available).length);
     
     const calendar: CalendarDay[] = [];
     const currentDate = new Date(startOfCalendar);
@@ -143,13 +156,25 @@ export async function getCalendarAvailability(
       const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
       const isToday = dateStr === todayStr;
       
+      const hasAvailability = isCurrentMonth && !isPastDate && (monthAvailability[dateStr] === true);
+      
+      // Debug logging for specific dates
+      if (dateStr === '2025-10-27') {
+        console.log(`🔍 [getCalendarAvailability] Debug for ${dateStr}:`, {
+          isCurrentMonth,
+          isPastDate,
+          monthAvailabilityValue: monthAvailability[dateStr],
+          hasAvailability
+        });
+      }
+      
       calendar.push({
         date: dateStr,
         day: currentDate.getDate(),
         isCurrentMonth,
         isPastDate,
         isWeekend,
-        hasAvailability: isCurrentMonth && !isPastDate && !isToday && (monthAvailability[dateStr] || false),
+        hasAvailability,
         isToday,
       });
       
@@ -189,6 +214,28 @@ export async function getTreatments() {
   }
 }
 
+export async function getFirstAvailableSlots(treatmentValue: string): Promise<QuickPickSlot[]> {
+  try {
+    console.log(`🎯 Getting first available slots for treatment: ${treatmentValue}`);
+    const treatment = await db
+      .select()
+      .from(treatments)
+      .where(eq(treatments.value, treatmentValue))
+      .limit(1);
+
+    if (!treatment[0]) {
+      console.error(`❌ Treatment not found: ${treatmentValue}`);
+      throw new Error('Treatment not found');
+    }
+
+    const slots = await availabilityService.findNextAvailableSlots(treatment[0].duration);
+    return slots;
+  } catch (error) {
+    console.error('❌ Error getting first available slots:', error);
+    throw new Error('Failed to get first available slots');
+  }
+}
+
 // Helper function to generate fallback calendar data
 function generateFallbackCalendar(year: number, month: number): CalendarDay[] {
   const today = new Date();
@@ -220,7 +267,7 @@ function generateFallbackCalendar(year: number, month: number): CalendarDay[] {
       isCurrentMonth,
       isPastDate,
       isWeekend,
-      hasAvailability: isCurrentMonth && !isPastDate && !isToday && Math.random() > 0.3, // Fallback random
+      hasAvailability: isCurrentMonth && !isPastDate, // Make all current month days selectable (fallback)
       isToday,
     });
     

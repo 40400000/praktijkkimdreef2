@@ -6,15 +6,26 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const dateParam = searchParams.get('date') || '2025-10-17';
     const durationParam = searchParams.get('duration') || '60';
+    const monthParam = searchParams.get('month') === 'true';
 
-    const date = new Date(`${dateParam}T00:00:00`);
     const treatmentDuration = parseInt(durationParam, 10);
 
-    const debugInfo = await availabilityService.debugDateAvailability(date, {
-      treatmentDuration,
-    });
-
-    return NextResponse.json(debugInfo);
+    if (monthParam) {
+      // Fetch debug info for entire month
+      const date = new Date(`${dateParam}T00:00:00`);
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      
+      const debugInfo = await availabilityService.debugMonthAvailability(year, month, treatmentDuration);
+      return NextResponse.json(debugInfo);
+    } else {
+      // Fetch debug info for single day
+      const date = new Date(`${dateParam}T00:00:00`);
+      const debugInfo = await availabilityService.debugDateAvailability(date, {
+        treatmentDuration,
+      });
+      return NextResponse.json(debugInfo);
+    }
   } catch (error) {
     console.error('Error in debug-availability route:', error);
     return NextResponse.json(

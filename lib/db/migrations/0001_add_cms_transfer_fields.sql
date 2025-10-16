@@ -12,3 +12,4 @@ COMMENT ON COLUMN appointments.transferred_at IS 'Timestamp when appointment was
 
 
 
+

@@ -36,13 +36,13 @@ export async function seedDatabase() {
       },
     ]).onConflictDoNothing();
 
-    // Seed working hours (Monday to Friday, 12:30 PM to 5 PM)
+    // Seed working hours (Monday to Friday, 12:30 PM to 5:30 PM)
     const workingHours = [
-      { dayOfWeek: 1, startTime: '12:30', endTime: '17:00' }, // Monday
-      { dayOfWeek: 2, startTime: '12:30', endTime: '17:00' }, // Tuesday
-      { dayOfWeek: 3, startTime: '12:30', endTime: '17:00' }, // Wednesday
-      { dayOfWeek: 4, startTime: '12:30', endTime: '17:00' }, // Thursday
-      { dayOfWeek: 5, startTime: '12:30', endTime: '17:00' }, // Friday
+      { dayOfWeek: 1, startTime: '12:30', endTime: '17:30' }, // Monday
+      { dayOfWeek: 2, startTime: '12:30', endTime: '17:30' }, // Tuesday
+      { dayOfWeek: 3, startTime: '12:30', endTime: '17:30' }, // Wednesday
+      { dayOfWeek: 4, startTime: '12:30', endTime: '17:30' }, // Thursday
+      { dayOfWeek: 5, startTime: '12:30', endTime: '17:30' }, // Friday
     ];
 
     await db.insert(availabilityRules).values(workingHours).onConflictDoNothing();

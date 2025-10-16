@@ -19,6 +19,11 @@ export interface AvailabilityOptions {
 // This ensures X minutes gap BETWEEN appointments (not before the first or after the last)
 const POST_APPOINTMENT_BUFFER_MINUTES = 15;
 
+export interface QuickPickSlot {
+  date: string;
+  time: string;
+}
+
 export class AvailabilityService {
   private calendarService: GoogleCalendarService;
 
@@ -93,11 +98,15 @@ export class AvailabilityService {
     );
 
     // Check each slot against calendar events (excluding VRIJ events)
-    return timeSlots.map(slot => {
+    return timeSlots.map((slot, index) => {
       const slotStart = this.parseTimeToDate(date, slot.time);
       const slotEnd = new Date(slotStart.getTime() + treatmentDuration * 60000);
-      // Add buffer to the slot end to ensure gap between appointments
-      const slotEndWithBuffer = new Date(slotEnd.getTime() + bufferTime * 60000);
+      
+      // For the last slot of the day, don't add buffer time
+      const isLastSlot = index === timeSlots.length - 1;
+      const slotEndWithBuffer = isLastSlot 
+        ? slotEnd 
+        : new Date(slotEnd.getTime() + bufferTime * 60000);
       
       const conflictingEvent = this.findConflictingEvent(blockingEvents, slotStart, slotEndWithBuffer);
       
@@ -115,6 +124,7 @@ export class AvailabilityService {
     date: Date,
     options: AvailabilityOptions
   ): Promise<any> {
+    console.log(`🔍 [debugDateAvailability] Called with date:`, date.toISOString(), 'dayOfWeek:', date.getDay());
     const { treatmentDuration, bufferTime = 15 } = options;
     const dayOfWeek = date.getDay();
     const workingHours = await this.getWorkingHours(dayOfWeek);
@@ -162,10 +172,15 @@ export class AvailabilityService {
       bufferTime
     );
 
-    const slotsWithDebug = timeSlots.map(slot => {
+    const slotsWithDebug = timeSlots.map((slot, index) => {
       const slotStart = this.parseTimeToDate(date, slot.time);
       const slotEnd = new Date(slotStart.getTime() + treatmentDuration * 60000);
-      const slotEndWithBuffer = new Date(slotEnd.getTime() + bufferTime * 60000);
+      
+      // For the last slot of the day, don't add buffer time
+      const isLastSlot = index === timeSlots.length - 1;
+      const slotEndWithBuffer = isLastSlot 
+        ? slotEnd 
+        : new Date(slotEnd.getTime() + bufferTime * 60000);
       
       const conflictingEvent = this.findConflictingEvent(blockingEvents, slotStart, slotEndWithBuffer);
       
@@ -196,6 +211,70 @@ export class AvailabilityService {
     };
   }
 
+  // Get debug info for multiple dates (for calendar view)
+  async debugMonthAvailability(
+    year: number,
+    month: number,
+    treatmentDuration: number = 60
+  ): Promise<Record<string, any>> {
+    const functionStart = performance.now();
+    console.log(`\n🗓️  [debugMonthAvailability] Starting for ${year}-${month + 1}`);
+    
+    // Create month boundaries in Amsterdam timezone
+    const startOfMonth = new Date(`${year}-${String(month + 1).padStart(2, '0')}-01T00:00:00+02:00`);
+    const endOfMonth = new Date(year, month + 1, 0);
+    endOfMonth.setHours(23, 59, 59, 999);
+    
+    console.log(`⏱️  [debugMonthAvailability] Fetching calendar events...`);
+    const eventsStart = performance.now();
+    
+    // Get all events for the month
+    const events = await this.calendarService.getEvents(startOfMonth, endOfMonth);
+    
+    const eventsEnd = performance.now();
+    console.log(`✅ [debugMonthAvailability] Events fetched in ${(eventsEnd - eventsStart).toFixed(0)}ms (${events.length} events)`);
+    
+    const debugInfo: Record<string, any> = {};
+    
+    console.log(`⏱️  [debugMonthAvailability] Checking each day...`);
+    const checkStart = performance.now();
+    
+    // Check each day of the month
+    for (let day = 1; day <= endOfMonth.getDate(); day++) {
+      const currentDate = new Date(year, month, day);
+      // Format date as YYYY-MM-DD without timezone conversion
+      const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+      
+      // Skip past dates and today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const checkDate = new Date(currentDate);
+      checkDate.setHours(0, 0, 0, 0);
+      if (checkDate <= today) {
+        debugInfo[dateStr] = {
+          message: "Past date or today",
+          workingHours: null,
+          vrijEvents: [],
+          events: [],
+          slots: [],
+        };
+        continue;
+      }
+      
+      // Get debug info for this day using pre-fetched events
+      const dayDebugInfo = await this.debugDateAvailabilityWithEvents(currentDate, events, treatmentDuration);
+      debugInfo[dateStr] = dayDebugInfo;
+    }
+    
+    const checkEnd = performance.now();
+    console.log(`✅ [debugMonthAvailability] Day checking completed in ${(checkEnd - checkStart).toFixed(0)}ms`);
+    
+    const functionEnd = performance.now();
+    console.log(`✅ [debugMonthAvailability] Total time: ${(functionEnd - functionStart).toFixed(0)}ms\n`);
+    
+    return debugInfo;
+  }
+
   // Get availability for multiple dates (for calendar view)
   async getMonthAvailability(
     year: number,
@@ -205,8 +284,8 @@ export class AvailabilityService {
     const functionStart = performance.now();
     console.log(`\n🗓️  [getMonthAvailability] Starting for ${year}-${month + 1}`);
     
-    // Create month boundaries in Amsterdam timezone
-    const startOfMonth = new Date(`${year}-${String(month + 1).padStart(2, '0')}-01T00:00:00+02:00`);
+    // Create month boundaries in local timezone
+    const startOfMonth = new Date(year, month, 1);
     const endOfMonth = new Date(year, month + 1, 0);
     endOfMonth.setHours(23, 59, 59, 999);
     
@@ -317,15 +396,9 @@ export class AvailabilityService {
     const [hours, minutes] = time.split(':').map(Number);
     
     // Create date in Amsterdam timezone to match Google Calendar events
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const day = date.getDate();
-    
-    // Create date string in Amsterdam timezone format (Europe/Amsterdam)
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
-    
-    // Parse as Amsterdam timezone (this handles DST automatically)
-    return new Date(dateStr + '+02:00'); // Europe/Amsterdam timezone offset (DST in October)
+    const newDate = new Date(date);
+    newDate.setHours(hours, minutes, 0, 0);
+    return newDate;
   }
 
   private findConflictingEvent(
@@ -349,7 +422,9 @@ export class AvailabilityService {
       
       if (isPersonalEvent) {
         // For personal events, only check direct overlap without buffer
-        return slotStart < eventEnd && slotEndWithBuffer > eventStart;
+        // Calculate the actual slot end time (without buffer)
+        const slotEnd = new Date(slotStart.getTime() + (slotEndWithBuffer.getTime() - slotStart.getTime()) - (POST_APPOINTMENT_BUFFER_MINUTES * 60000));
+        return slotStart < eventEnd && slotEnd > eventStart;
       }
       
       // For regular appointments, we need to ensure buffer on both sides:
@@ -477,30 +552,146 @@ export class AvailabilityService {
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
   }
 
+  // Debug date availability using pre-fetched events
+  private async debugDateAvailabilityWithEvents(
+    date: Date,
+    monthEvents: calendar_v3.Schema$Event[],
+    treatmentDuration: number = 60
+  ): Promise<any> {
+    const dayOfWeek = date.getDay();
+    const workingHours = await this.getWorkingHours(dayOfWeek);
+
+    const dayEvents = monthEvents.filter(event => {
+      if (!event.start?.dateTime) return false;
+      return new Date(event.start.dateTime).toDateString() === date.toDateString();
+    });
+
+    const vrijEvents = this.findVrijEvents(dayEvents);
+    
+    if (!workingHours && vrijEvents.length === 0) {
+      return {
+        message: "No working hours and no VRIJ events for this day",
+        workingHours: null,
+        vrijEvents: [],
+        events: dayEvents,
+        slots: [],
+      };
+    }
+    
+    let extendedHours: { startTime: string; endTime: string };
+    let baseHoursInfo = workingHours ? `${workingHours.startTime} - ${workingHours.endTime}` : 'None';
+    let extendedHoursInfo = 'Not extended';
+
+    if (workingHours) {
+      extendedHours = this.calculateExtendedHours(workingHours, vrijEvents, date);
+      if (vrijEvents.length > 0) {
+        extendedHoursInfo = `${extendedHours.startTime} - ${extendedHours.endTime}`;
+      }
+    } else {
+      extendedHours = this.calculateVrijOnlyHours(vrijEvents, date);
+      extendedHoursInfo = `VRIJ only: ${extendedHours.startTime} - ${extendedHours.endTime}`;
+    }
+    
+    const blockingEvents = dayEvents.filter(event => !this.isVrijEvent(event));
+    
+    const timeSlots = this.generateTimeSlots(
+      extendedHours.startTime,
+      extendedHours.endTime,
+      treatmentDuration,
+      15
+    );
+
+    const slotsWithDebug = timeSlots.map((slot, index) => {
+      const slotStart = this.parseTimeToDate(date, slot.time);
+      const slotEnd = new Date(slotStart.getTime() + treatmentDuration * 60000);
+      
+      // For the last slot of the day, don't add buffer time
+      const isLastSlot = index === timeSlots.length - 1;
+      const slotEndWithBuffer = isLastSlot 
+        ? slotEnd 
+        : new Date(slotEnd.getTime() + 15 * 60000);
+      
+      const conflictingEvent = this.findConflictingEvent(blockingEvents, slotStart, slotEndWithBuffer);
+      
+      return {
+        time: slot.time,
+        available: !conflictingEvent,
+        isBlocked: conflictingEvent ? this.isBlockedEvent(conflictingEvent) : false,
+        conflictingEvent: conflictingEvent ? {
+          summary: conflictingEvent.summary,
+          start: conflictingEvent.start?.dateTime,
+          end: conflictingEvent.end?.dateTime,
+        } : null,
+      };
+    });
+
+    return {
+      date: date.toDateString(),
+      dayOfWeek: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayOfWeek],
+      treatmentDuration: treatmentDuration,
+      bufferTime: 15,
+      workingHours: workingHours,
+      baseHoursInfo: baseHoursInfo,
+      vrijEvents: vrijEvents.map(e => ({ summary: e.summary, start: e.start?.dateTime, end: e.end?.dateTime })),
+      extendedHours: extendedHoursInfo,
+      events: dayEvents.map(e => ({ summary: e.summary, start: e.start?.dateTime, end: e.end?.dateTime })),
+      blockingEvents: blockingEvents.map(e => ({ summary: e.summary, start: e.start?.dateTime, end: e.end?.dateTime })),
+      slots: slotsWithDebug,
+    };
+  }
+
   private async hasAnyAvailability(
     date: Date,
     monthEvents: calendar_v3.Schema$Event[],
     treatmentDuration: number = 60
   ): Promise<boolean> {
-    // Use the SAME logic as getDateAvailability for consistency
-    // This ensures month view and day view always match
-    
-    try {
-      const slots = await this.getDateAvailability(date, {
-        treatmentDuration,
-        bufferTime: 15
-      });
-      
-      // Check if any slots are available
-      const hasAvailability = slots.some(slot => slot.available);
-      
-      console.log(`📊 [hasAnyAvailability] Result for ${date.toDateString()}: ${slots.filter(s => s.available).length}/${slots.length} available slots`);
-      
-      return hasAvailability;
-    } catch (error) {
-      console.error(`❌ [hasAnyAvailability] Error for ${date.toDateString()}:`, error);
-      return false; // Default to no availability on error
+    const dayOfWeek = date.getDay();
+    const workingHours = await this.getWorkingHours(dayOfWeek);
+
+    const dayEvents = monthEvents.filter(event => {
+      if (!event.start?.dateTime) return false;
+      return new Date(event.start.dateTime).toDateString() === date.toDateString();
+    });
+
+    const vrijEvents = this.findVrijEvents(dayEvents);
+    if (!workingHours && vrijEvents.length === 0) {
+      return false;
     }
+    
+    let extendedHours: { startTime: string; endTime: string };
+    if (workingHours) {
+      extendedHours = this.calculateExtendedHours(workingHours, vrijEvents, date);
+    } else {
+      extendedHours = this.calculateVrijOnlyHours(vrijEvents, date);
+    }
+    
+    const blockingEvents = dayEvents.filter(event => !this.isVrijEvent(event));
+    
+    const timeSlots = this.generateTimeSlots(
+      extendedHours.startTime,
+      extendedHours.endTime,
+      treatmentDuration,
+      15 
+    );
+
+    for (let i = 0; i < timeSlots.length; i++) {
+      const slot = timeSlots[i];
+      const slotStart = this.parseTimeToDate(date, slot.time);
+      const slotEnd = new Date(slotStart.getTime() + treatmentDuration * 60000);
+      
+      // For the last slot of the day, don't add buffer time
+      const isLastSlot = i === timeSlots.length - 1;
+      const slotEndWithBuffer = isLastSlot 
+        ? slotEnd 
+        : new Date(slotEnd.getTime() + 15 * 60000);
+      
+      const conflictingEvent = this.findConflictingEvent(blockingEvents, slotStart, slotEndWithBuffer);
+      if (!conflictingEvent) {
+        return true; 
+      }
+    }
+    
+    return false;
   }
 
   private getWorkingMinutes(startTime: string, endTime: string): number {
@@ -511,6 +702,114 @@ export class AvailabilityService {
     const endMinutes = endHour * 60 + endMinute;
     
     return endMinutes - startMinutes;
+  }
+
+  private async findFirstAvailableSlotForDay(
+    date: Date,
+    dayEvents: calendar_v3.Schema$Event[],
+    treatmentDuration: number = 60
+  ): Promise<TimeSlot | null> {
+    const dayOfWeek = date.getDay();
+    const workingHours = await this.getWorkingHours(dayOfWeek);
+    const vrijEvents = this.findVrijEvents(dayEvents);
+
+    if (!workingHours && vrijEvents.length === 0) {
+      return null;
+    }
+    
+    let extendedHours: { startTime: string; endTime: string };
+    if (workingHours) {
+      extendedHours = this.calculateExtendedHours(workingHours, vrijEvents, date);
+    } else {
+      extendedHours = this.calculateVrijOnlyHours(vrijEvents, date);
+    }
+    
+    const blockingEvents = dayEvents.filter(event => !this.isVrijEvent(event));
+    
+    const timeSlots = this.generateTimeSlots(
+      extendedHours.startTime,
+      extendedHours.endTime,
+      treatmentDuration,
+      15 
+    );
+
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+
+    for (let i = 0; i < timeSlots.length; i++) {
+      const slot = timeSlots[i];
+
+      if (isToday) {
+        const [hours, minutes] = slot.time.split(':').map(Number);
+        if (hours * 60 + minutes <= currentTime) {
+          continue; // Skip past slots for today
+        }
+      }
+
+      const slotStart = this.parseTimeToDate(date, slot.time);
+      const slotEnd = new Date(slotStart.getTime() + treatmentDuration * 60000);
+      
+      const isLastSlot = i === timeSlots.length - 1;
+      const slotEndWithBuffer = isLastSlot 
+        ? slotEnd 
+        : new Date(slotEnd.getTime() + 15 * 60000);
+      
+      const conflictingEvent = this.findConflictingEvent(blockingEvents, slotStart, slotEndWithBuffer);
+      if (!conflictingEvent) {
+        return slot; // Return the first available slot
+      }
+    }
+    
+    return null; // No available slots for this day
+  }
+
+  async findNextAvailableSlots(treatmentDuration: number, count: number = 3): Promise<QuickPickSlot[]> {
+      const quickPicks: QuickPickSlot[] = [];
+      let currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(currentDate);
+      endDate.setDate(endDate.getDate() + 90); // Search up to 90 days in the future
+
+      console.log(`🔍 [findNextAvailableSlots] Searching for ${count} slots with duration ${treatmentDuration}min between ${currentDate.toDateString()} and ${endDate.toDateString()}`);
+      const allEvents = await this.calendarService.getEvents(currentDate, endDate);
+      console.log(`🔍 [findNextAvailableSlots] Found ${allEvents.length} total events to check against.`);
+
+      for (let i = 0; i < 90 && quickPicks.length < count; i++) {
+          // Skip past dates
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          if (currentDate < today) {
+              currentDate.setDate(currentDate.getDate() + 1);
+              continue;
+          }
+
+          const dayEvents = allEvents.filter(event => {
+              if (!event.start?.dateTime) return false;
+              // Ensure we are comparing dates in the same way
+              const eventDate = new Date(event.start.dateTime);
+              return eventDate.getFullYear() === currentDate.getFullYear() &&
+                     eventDate.getMonth() === currentDate.getMonth() &&
+                     eventDate.getDate() === currentDate.getDate();
+          });
+
+          const firstSlot = await this.findFirstAvailableSlotForDay(currentDate, dayEvents, treatmentDuration);
+          
+          if (firstSlot) {
+              const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+              quickPicks.push({
+                  date: dateStr,
+                  time: firstSlot.time,
+              });
+              console.log(`✅ [findNextAvailableSlots] Found available slot on ${dateStr} at ${firstSlot.time}`);
+          }
+
+          currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      console.log(`✅ [findNextAvailableSlots] Finished search. Found ${quickPicks.length} slots.`);
+      return quickPicks;
   }
 }
 
