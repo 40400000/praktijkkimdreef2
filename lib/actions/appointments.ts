@@ -26,8 +26,19 @@ export interface AppointmentResult {
 export async function createAppointment(
   appointmentData: AppointmentData
 ): Promise<AppointmentResult> {
+  console.log('🚀 Starting appointment creation process');
+  console.log('📋 Appointment data received:', {
+    treatment: appointmentData.treatment,
+    date: appointmentData.date,
+    time: appointmentData.time,
+    name: appointmentData.name,
+    email: appointmentData.email,
+    phone: appointmentData.phone
+  });
+
   try {
     // Get treatment details
+    console.log('🔍 Looking up treatment:', appointmentData.treatment);
     const treatment = await db
       .select()
       .from(treatments)
@@ -35,11 +46,18 @@ export async function createAppointment(
       .limit(1);
 
     if (!treatment[0]) {
+      console.log('❌ Treatment not found:', appointmentData.treatment);
       return {
         success: false,
         message: 'Behandeling niet gevonden',
       };
     }
+
+    console.log('✅ Treatment found:', {
+      id: treatment[0].id,
+      label: treatment[0].label,
+      duration: treatment[0].duration
+    });
 
     // Parse appointment date and time in Amsterdam timezone
     // Create date in Amsterdam timezone to match availability system
@@ -59,15 +77,23 @@ export async function createAppointment(
     // Check if the time slot is still available
     // This is a basic check - in production you might want more sophisticated validation
     const now = new Date();
+    console.log('⏰ Current time:', now.toISOString());
+    console.log('⏰ Appointment time:', appointmentDateTime.toISOString());
+    console.log('⏰ Time difference (minutes):', (appointmentDateTime.getTime() - now.getTime()) / 60000);
+    
     if (appointmentDateTime <= now) {
+      console.log('❌ Appointment time is in the past');
       return {
         success: false,
         message: 'Kan geen afspraak maken in het verleden',
       };
     }
 
+    console.log('✅ Appointment time is valid (in the future)');
+
     // Create Google Calendar event first
     let calendarEventId: string | undefined;
+    console.log('📅 Creating Google Calendar event...');
     try {
       const calendarEvent = await googleCalendar.createAppointment({
         clientName: appointmentData.name,
@@ -80,42 +106,79 @@ export async function createAppointment(
       });
       
       calendarEventId = calendarEvent.id || undefined;
+      console.log('✅ Google Calendar event created successfully:', {
+        eventId: calendarEventId,
+        summary: calendarEvent.summary,
+        startTime: calendarEvent.start?.dateTime,
+        endTime: calendarEvent.end?.dateTime
+      });
     } catch (calendarError) {
-      console.error('Error creating calendar event:', calendarError);
+      console.error('❌ Error creating calendar event:', calendarError);
+      console.log('⚠️ Continuing with database insertion despite calendar error');
       // Continue with database insertion even if calendar fails
     }
 
     // Save appointment to database
+    console.log('💾 Saving appointment to database...');
+    const appointmentRecord = {
+      treatmentId: treatment[0].id,
+      appointmentDate: appointmentData.date,
+      appointmentTime: appointmentData.time,
+      duration: treatment[0].duration,
+      clientName: appointmentData.name,
+      clientEmail: appointmentData.email,
+      clientPhone: appointmentData.phone,
+      message: appointmentData.message,
+      status: 'pending' as const,
+      googleCalendarEventId: calendarEventId,
+      updatedAt: new Date(),
+    };
+    
+    console.log('📝 Database record to insert:', {
+      treatmentId: appointmentRecord.treatmentId,
+      appointmentDate: appointmentRecord.appointmentDate,
+      appointmentTime: appointmentRecord.appointmentTime,
+      duration: appointmentRecord.duration,
+      clientName: appointmentRecord.clientName,
+      clientEmail: appointmentRecord.clientEmail,
+      status: appointmentRecord.status,
+      googleCalendarEventId: appointmentRecord.googleCalendarEventId
+    });
+
     const [newAppointment] = await db
       .insert(appointments)
-      .values({
-        treatmentId: treatment[0].id,
-        appointmentDate: appointmentData.date,
-        appointmentTime: appointmentData.time,
-        duration: treatment[0].duration,
-        clientName: appointmentData.name,
-        clientEmail: appointmentData.email,
-        clientPhone: appointmentData.phone,
-        message: appointmentData.message,
-        status: 'pending',
-        googleCalendarEventId: calendarEventId,
-        updatedAt: new Date(),
-      })
+      .values(appointmentRecord)
       .returning();
 
+    console.log('✅ Appointment saved to database:', {
+      id: newAppointment.id,
+      status: newAppointment.status,
+      createdAt: newAppointment.createdAt
+    });
+
     // Revalidate relevant pages
+    console.log('🔄 Revalidating pages...');
     revalidatePath('/afspraak-maken');
     revalidatePath('/admin/appointments'); // If you have an admin page
 
-    return {
+    const result = {
       success: true,
       message: 'Afspraak succesvol aangevraagd! Kim zal contact met u opnemen ter bevestiging.',
       appointmentId: newAppointment.id,
       calendarEventId,
     };
 
+    console.log('🎉 Appointment creation completed successfully:', result);
+    return result;
+
   } catch (error) {
-    console.error('Error creating appointment:', error);
+    console.error('💥 Error creating appointment:', error);
+    console.error('📊 Error details:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    
     return {
       success: false,
       message: 'Er is een fout opgetreden bij het aanvragen van de afspraak. Probeer het opnieuw.',
