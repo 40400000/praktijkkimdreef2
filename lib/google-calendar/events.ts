@@ -101,15 +101,46 @@ export class GoogleCalendarService {
       console.log(`🕐 Start time: ${event.start.toISOString()} (${event.start.toString()})`);
       console.log(`🕐 End time: ${event.end.toISOString()} (${event.end.toString()})`);
       
+      // Create the event data with proper timezone handling
+      // We need to ensure the times are sent as Amsterdam timezone
+      const startDateTime = new Date(event.start);
+      const endDateTime = new Date(event.end);
+      
+      // Format the datetime strings in Amsterdam timezone
+      const startDateTimeString = startDateTime.toLocaleString('sv-SE', { 
+        timeZone: 'Europe/Amsterdam',
+        year: 'numeric',
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      }).replace(' ', 'T');
+      
+      const endDateTimeString = endDateTime.toLocaleString('sv-SE', { 
+        timeZone: 'Europe/Amsterdam',
+        year: 'numeric',
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      }).replace(' ', 'T');
+
+      console.log(`🌍 Formatted start time for Google Calendar: ${startDateTimeString}`);
+      console.log(`🌍 Formatted end time for Google Calendar: ${endDateTimeString}`);
+
       const eventData: calendar_v3.Schema$Event = {
         summary: event.summary,
         description: event.description,
         start: {
-          dateTime: event.start.toISOString(),
+          dateTime: startDateTimeString,
           timeZone: 'Europe/Amsterdam',
         },
         end: {
-          dateTime: event.end.toISOString(),
+          dateTime: endDateTimeString,
           timeZone: 'Europe/Amsterdam',
         },
         attendees: event.attendees?.map(attendee => ({

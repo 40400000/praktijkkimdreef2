@@ -64,7 +64,7 @@ export async function createAppointment(
     const appointmentDateTimeString = `${appointmentData.date}T${appointmentData.time}:00`;
     
     // Create date object - this will be interpreted in the local timezone
-    // The Google Calendar API will handle the timezone conversion properly
+    // But we need to ensure Google Calendar gets the correct Amsterdam time
     const appointmentDateTime = new Date(appointmentDateTimeString);
     const endDateTime = new Date(appointmentDateTime.getTime() + treatment[0].duration * 60000);
     
