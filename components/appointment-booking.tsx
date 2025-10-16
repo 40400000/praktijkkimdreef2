@@ -138,6 +138,7 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
       if (appointmentData.date && selectedTreatment) {
         console.log(`🔍 [UI] Loading time slots for ${appointmentData.date} with treatment ${selectedTreatment}`);
         setLoading(true);
+        setTimeSlots([]); // Clear previous slots
         try {
           const slots = await getAvailableTimeSlots(appointmentData.date, selectedTreatment);
           console.log(`✅ [UI] Received ${slots.length} time slots, ${slots.filter(s => s.available).length} available`);
@@ -698,121 +699,119 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
                             )}
                           </div>
                           
-                          {/* Location 2: Quick select under calendar if date is selected */}
-                          {appointmentData.date && (
-                            <div className="mt-8">
-                              <QuickSelectComponent />
-                            </div>
-                          )}
+                          {/* Quick select always under calendar */}
+                          <div className="mt-8">
+                            <QuickSelectComponent />
+                          </div>
                         </div>
 
-                        {/* Right Column: Time Selection or Quick Select */}
-                        <div>
-                           {appointmentData.date ? (
-                            <motion.div
-                              initial={{ opacity: 0, x: 20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ duration: 0.3, ease: "easeInOut" }}
-                            >
-                              <div className="flex items-center mb-4">
-                                <Clock className="w-5 h-5 text-[#899B90] mr-2" />
-                                <h3 className="text-lg font-medium text-gray-900">
-                                  Beschikbare tijden voor {(() => {
-                                    const [year, month, day] = appointmentData.date.split('-').map(Number);
-                                    const date = new Date(year, month - 1, day);
-                                    return date.toLocaleDateString('nl-NL', { 
-                                      weekday: 'short', 
-                                      day: 'numeric', 
-                                      month: 'short' 
-                                    });
-                                  })()}
-                                </h3>
+                        {/* Right Column: Time Selection (only when date is selected) */}
+                        {appointmentData.date && (
+                          <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                          >
+                            <div className="flex items-center mb-4">
+                              <Clock className="w-5 h-5 text-[#899B90] mr-2" />
+                              <h3 className="text-lg font-medium text-gray-900">
+                                Beschikbare tijden voor {(() => {
+                                  const [year, month, day] = appointmentData.date.split('-').map(Number);
+                                  const date = new Date(year, month - 1, day);
+                                  return date.toLocaleDateString('nl-NL', { 
+                                    weekday: 'short', 
+                                    day: 'numeric', 
+                                    month: 'short' 
+                                  });
+                                })()}
+                              </h3>
+                            </div>
+                            
+                            <div className="relative">
+                              <div 
+                                ref={timeSlotsContainerRef}
+                                onScroll={handleTimeSlotsScroll}
+                                className="grid grid-cols-3 gap-2 max-h-80 overflow-y-auto scroll-smooth"
+                              >
+                                {loading ? (
+                                  Array.from({ length: 9 }).map((_, index) => (
+                                    <div key={index} className="p-2 rounded-lg h-[40px] bg-gray-100 animate-pulse" />
+                                  ))
+                                ) : (
+                                  <>
+                                    {timeSlots.filter(slot => slot.available).length > 0 ? (
+                                      timeSlots.filter(slot => slot.available).map((slot) => (
+                                        <motion.button
+                                          key={slot.time}
+                                          type="button"
+                                          onClick={() => handleTimeSelect(slot.time)}
+                                          whileHover={{ scale: 1.05 }}
+                                          whileTap={{ scale: 0.95 }}
+                                          className={`p-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                            appointmentData.time === slot.time
+                                              ? 'bg-[#899B90] text-white font-medium'
+                                              : 'text-gray-900 hover:bg-[#899B90] hover:text-white border border-gray-200 hover:border-[#899B90]'
+                                          }`}
+                                        >
+                                          {slot.time}
+                                        </motion.button>
+                                      ))
+                                    ) : (
+                                      <div className="col-span-3 text-center text-sm text-gray-500 py-4">
+                                        Geen beschikbare tijden op deze datum.
+                                      </div>
+                                    )}
+                                  </>
+                                )}
                               </div>
                               
-                              <div className="relative">
-                                <div 
-                                  ref={timeSlotsContainerRef}
-                                  onScroll={handleTimeSlotsScroll}
-                                  className="grid grid-cols-3 gap-2 max-h-80 overflow-y-auto scroll-smooth"
-                                >
-                                  {timeSlots.map((slot) => (
-                                    <motion.button
-                                      key={slot.time}
-                                      type="button"
-                                      onClick={() => handleTimeSelect(slot.time)}
-                                      disabled={!slot.available}
-                                      whileHover={slot.available ? { scale: 1.05 } : {}}
-                                      whileTap={slot.available ? { scale: 0.95 } : {}}
-                                      className={`p-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                        appointmentData.time === slot.time
-                                          ? 'bg-[#899B90] text-white font-medium'
-                                          : slot.available
-                                          ? 'text-gray-900 hover:bg-[#899B90] hover:text-white border border-gray-200 hover:border-[#899B90]'
-                                          : 'text-gray-400 cursor-not-allowed bg-gray-50 border border-gray-200'
-                                      }`}
-                                    >
-                                      {slot.time}
-                                    </motion.button>
-                                  ))}
-                                </div>
-                                
-                                {/* Scroll Indicator */}
-                                <AnimatePresence>
-                                  {showScrollIndicator && (
-                                    <motion.div
-                                      initial={{ opacity: 0 }}
-                                      animate={{ opacity: 1 }}
-                                      exit={{ opacity: 0 }}
-                                      className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
-                                    >
-                                      {/* Gradient fade */}
-                                      <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
-                                      
-                                      {/* Scroll hint */}
-                                      <div className="absolute bottom-2 left-0 right-0 flex flex-col items-center">
-                                        <motion.div
-                                          animate={{ y: [0, 4, 0] }}
-                                          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                                          className="flex flex-col items-center"
-                                        >
-                                          <span className="text-xs text-gray-500 mb-1 font-medium">Meer tijden</span>
-                                          <ChevronDown className="w-4 h-4 text-[#899B90]" />
-                                        </motion.div>
-                                      </div>
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
-                              </div>
-
-                              {/* Next button when time is selected */}
-                              {appointmentData.time && (
-                                <motion.div
-                                  initial={{ opacity: 0, y: 20 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                                  className="mt-6"
-                                >
-                                  <button
-                                    onClick={handleNextStep}
-                                    className="w-full inline-flex items-center justify-center px-6 py-3 bg-[#899B90] text-white rounded-xl hover:bg-[#6d7c74] transition-colors duration-200 font-medium cursor-pointer"
+                              {/* Scroll Indicator */}
+                              <AnimatePresence>
+                                {showScrollIndicator && (
+                                  <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
                                   >
-                                    Volgende
-                                    <ArrowRight className="ml-2 w-4 h-4" />
-                                  </button>
-                                </motion.div>
-                              )}
-                            </motion.div>
-                          ) : (
-                            <motion.div
-                              initial={{ opacity: 0, x: 20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ duration: 0.3, ease: "easeInOut" }}
-                              className="w-full"
-                            >
-                              <QuickSelectComponent />
-                            </motion.div>
-                          )}
-                        </div>
+                                    {/* Gradient fade */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
+                                    
+                                    {/* Scroll hint */}
+                                    <div className="absolute bottom-2 left-0 right-0 flex flex-col items-center">
+                                      <motion.div
+                                        animate={{ y: [0, 4, 0] }}
+                                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                                        className="flex flex-col items-center"
+                                      >
+                                        <span className="text-xs text-gray-500 mb-1 font-medium">Meer tijden</span>
+                                        <ChevronDown className="w-4 h-4 text-[#899B90]" />
+                                      </motion.div>
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+
+                            {/* Next button when time is selected */}
+                            {appointmentData.time && (
+                              <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                className="mt-6"
+                              >
+                                <button
+                                  onClick={handleNextStep}
+                                  className="w-full inline-flex items-center justify-center px-6 py-3 bg-[#899B90] text-white rounded-xl hover:bg-[#6d7c74] transition-colors duration-200 font-medium cursor-pointer"
+                                >
+                                  Volgende
+                                  <ArrowRight className="ml-2 w-4 h-4" />
+                                </button>
+                              </motion.div>
+                            )}
+                          </motion.div>
+                        )}
 
                         {/* Debug Information Toggle - Only show in development */}
                         {process.env.NODE_ENV === 'development' && (
