@@ -46,14 +46,6 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
   const [debugInfo, setDebugInfo] = useState<Record<string, any>>({});
   const [showDebugInfo, setShowDebugInfo] = useState(false);
-  const [quickSelectOptions, setQuickSelectOptions] = useState<Array<{
-    label: string;
-    dayOfWeek: number; // 0 = Sunday, 1 = Monday, etc.
-    timeRange: { start: string; end: string };
-    available: boolean;
-    date?: string;
-    time?: string;
-  }>>([]);
   const timeSlotsContainerRef = useRef<HTMLDivElement>(null);
 
   // Load treatments on component mount
@@ -116,53 +108,6 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
     }
     loadCalendarData();
   }, [currentMonth, selectedTreatment, treatments]);
-
-  // Calculate quick select options when calendar data changes
-  useEffect(() => {
-    if (calendarData.length === 0 || !selectedTreatment) {
-      setQuickSelectOptions([]);
-      return;
-    }
-
-    const today = new Date();
-    const currentMonthData = calendarData.filter(d => d.isCurrentMonth);
-    
-    // Define quick select preferences
-    const quickSelectPrefs = [
-      { label: "Woensdag middag", dayOfWeek: 3, timeRange: { start: "12:00", end: "15:00" } }, // Wednesday midday
-      { label: "Donderdag avond", dayOfWeek: 4, timeRange: { start: "17:00", end: "19:00" } }, // Thursday evening  
-      { label: "Maandag middag", dayOfWeek: 1, timeRange: { start: "12:00", end: "15:00" } }, // Monday midday
-    ];
-
-    const options = quickSelectPrefs.map(pref => {
-      // Find the next occurrence of this day of week in current month
-      const availableDates = currentMonthData
-        .filter(d => {
-          const date = new Date(d.date);
-          return date.getDay() === pref.dayOfWeek && d.hasAvailability;
-        })
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-      if (availableDates.length > 0) {
-        const selectedDate = availableDates[0];
-        // For now, we'll set a default time within the range
-        // The actual time selection will be handled when the user clicks
-        return {
-          ...pref,
-          available: true,
-          date: selectedDate.date,
-          time: pref.timeRange.start
-        };
-      }
-
-      return {
-        ...pref,
-        available: false
-      };
-    });
-
-    setQuickSelectOptions(options);
-  }, [calendarData, selectedTreatment]);
 
   // Load time slots when date changes
   useEffect(() => {
@@ -237,44 +182,6 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
 
   const handleTimeSelect = (time: string) => {
     setAppointmentData({ ...appointmentData, time });
-  };
-
-  const handleQuickSelect = async (option: typeof quickSelectOptions[0]) => {
-    if (!option.available || !option.date) return;
-    
-    console.log(`🔍 [UI] Quick selecting ${option.label} for ${option.date}`);
-    
-    // Set the date
-    setAppointmentData({ ...appointmentData, date: option.date, time: "" });
-    
-    // Load time slots for this date to find the best time within the range
-    try {
-      const slots = await getAvailableTimeSlots(option.date, selectedTreatment);
-      console.log(`✅ [UI] Received ${slots.length} time slots for quick select`);
-      
-      // Find the best available time within the preferred range
-      const preferredSlots = slots.filter(slot => 
-        slot.available && 
-        slot.time >= option.timeRange.start && 
-        slot.time <= option.timeRange.end
-      );
-      
-      if (preferredSlots.length > 0) {
-        // Select the first available time in the preferred range
-        const selectedTime = preferredSlots[0].time;
-        setAppointmentData({ ...appointmentData, date: option.date, time: selectedTime });
-        console.log(`✅ [UI] Quick selected time: ${selectedTime}`);
-      } else {
-        // If no time in preferred range, select the first available time
-        const firstAvailable = slots.find(slot => slot.available);
-        if (firstAvailable) {
-          setAppointmentData({ ...appointmentData, date: option.date, time: firstAvailable.time });
-          console.log(`⚠️ [UI] No preferred time available, selected: ${firstAvailable.time}`);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading time slots for quick select:', error);
-    }
   };
 
   // Month navigation functions
@@ -359,6 +266,27 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
   };
 
   const selectedTreatmentData = treatments.find(t => t.value === selectedTreatment);
+
+  // Helper: get the next occurrence of a weekday within the next 14 days and return ISO date string
+  function getRelativeWeekdayDate(weekdayShort: string) {
+    const map: Record<string, number> = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };
+    const target = map[weekdayShort.toLowerCase()] ?? 1;
+    const today = new Date();
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      if (d.getDay() === target) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      }
+    }
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  }
+
+  function formatIsoDateFriendly(isoDate: string) {
+    const [year, month, day] = isoDate.split('-').map(Number);
+    const d = new Date(year, (month || 1) - 1, day || 1);
+    return d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
+  }
 
   return (
     <div className="min-h-screen">
@@ -721,69 +649,59 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
                           </div>
                         </div>
 
-                        {/* Quick Select Options */}
-                        {quickSelectOptions.length > 0 && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3, delay: 0.2 }}
-                            className="mt-6"
-                          >
-                            <div className="border-t border-gray-200 pt-6">
-                              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                                Snelle keuze
-                              </h3>
-                              <p className="text-sm text-gray-600 mb-4">
-                                Kies een van deze populaire tijdstippen:
-                              </p>
-                              
-                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                {quickSelectOptions.map((option, index) => (
-                                  <motion.button
-                                    key={option.label}
+                        {/* Quick Select Suggestions - below calendar, same visual style */}
+                        <div className="mt-6">
+                          <div className="bg-[#FFFFFF] border border-[#e6e8e5] rounded-xl p-4">
+                            <div className="flex items-center mb-3">
+                              <Clock className="w-4 h-4 text-[#899B90] mr-2" />
+                              <h4 className="text-sm font-medium text-gray-900">Snelle keuze</h4>
+                            </div>
+
+                            <p className="text-sm text-gray-600 mb-3">Kies snel één van deze veelgevraagde tijdsblokken (indien beschikbaar).</p>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              {[
+                                { label: 'Woensdag - Middag', isoDate: getRelativeWeekdayDate('wed'), time: '13:00' },
+                                { label: 'Donderdag - Avond', isoDate: getRelativeWeekdayDate('thu'), time: '19:00' },
+                                { label: 'Maandag - Middag', isoDate: getRelativeWeekdayDate('mon'), time: '13:00' },
+                              ].map((opt) => {
+                                const calEntry = calendarData.find(cd => cd.date === opt.isoDate);
+                                const available = calEntry ? calEntry.hasAvailability : false;
+
+                                return (
+                                  <button
+                                    key={`${opt.isoDate}-${opt.time}`}
                                     type="button"
-                                    onClick={() => handleQuickSelect(option)}
-                                    disabled={!option.available}
-                                    whileHover={option.available ? { scale: 1.02 } : {}}
-                                    whileTap={option.available ? { scale: 0.98 } : {}}
-                                    className={`
-                                      p-4 rounded-xl border text-left transition-all duration-200
-                                      ${option.available
-                                        ? 'border-[#899B90] bg-white hover:bg-[#899B90] hover:text-white cursor-pointer'
-                                        : 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+                                    onClick={() => {
+                                      if (!selectedTreatment) {
+                                        setNotification({ type: 'error', message: 'Kies eerst een behandeling.' });
+                                        return;
                                       }
-                                    `}
+                                      if (!available) {
+                                        setNotification({ type: 'error', message: 'Deze datum heeft geen beschikbaarheid.' });
+                                        return;
+                                      }
+
+                                      setAppointmentData({ ...appointmentData, date: opt.isoDate, time: opt.time });
+                                    }}
+                                    className={`w-full text-left px-3 py-3 rounded-lg transition-colors duration-200 border ${available ? 'border-gray-200 hover:border-[#899B90] hover:bg-[#f7faf7]' : 'border-gray-100 bg-gray-50 cursor-not-allowed text-gray-400'}`}
+                                    disabled={!available}
                                   >
                                     <div className="flex items-center justify-between">
                                       <div>
-                                        <div className={`font-medium text-sm ${
-                                          option.available ? 'text-gray-900' : 'text-gray-400'
-                                        }`}>
-                                          {option.label}
-                                        </div>
-                                        {option.available && option.date && (
-                                          <div className="text-xs text-gray-600 mt-1">
-                                            {(() => {
-                                              const [year, month, day] = option.date.split('-').map(Number);
-                                              const date = new Date(year, month - 1, day);
-                                              return date.toLocaleDateString('nl-NL', { 
-                                                day: 'numeric', 
-                                                month: 'short' 
-                                              });
-                                            })()}
-                                          </div>
-                                        )}
+                                        <div className="text-sm font-medium text-gray-900">{opt.label}</div>
+                                        <div className="text-xs text-gray-600">{formatIsoDateFriendly(opt.isoDate)} • {opt.time}</div>
                                       </div>
-                                      <div className={`w-2 h-2 rounded-full ${
-                                        option.available ? 'bg-green-500' : 'bg-gray-300'
-                                      }`} />
+                                      <div className={`text-xs font-medium ${available ? 'text-green-700' : 'text-red-600'}`}>
+                                        {available ? 'Beschikbaar' : 'Niet beschikbaar'}
+                                      </div>
                                     </div>
-                                  </motion.button>
-                                ))}
-                              </div>
+                                  </button>
+                                );
+                              })}
                             </div>
-                          </motion.div>
-                        )}
+                          </div>
+                        </div>
 
                         {/* Debug Information Toggle - Only show in development */}
                         {process.env.NODE_ENV === 'development' && (
