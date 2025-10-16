@@ -21,6 +21,12 @@ export interface CalendarDay {
   isToday: boolean;
 }
 
+export interface QuickSelectSlot {
+  date: string;
+  time: string;
+  label: string;
+}
+
 // Get available time slots for a specific date and treatment
 export async function getAvailableTimeSlots(
   date: string,
@@ -186,6 +192,71 @@ export async function getCalendarAvailability(
     // Return fallback calendar without availability
     return generateFallbackCalendar(year, month);
   }
+}
+
+// Get 3 quick select slots for a treatment
+export async function getQuickSelectSlots(
+  treatmentValue: string
+): Promise<QuickSelectSlot[]> {
+  console.log(`🎯 Getting quick select slots for treatment: ${treatmentValue}`);
+  
+  const quickSlots: QuickSelectSlot[] = [];
+  const selectedDays: Set<string> = new Set();
+  const selectedCategories: Set<string> = new Set();
+
+  const timeCategories = [
+    { name: 'Ochtend', start: 8, end: 12 },
+    { name: 'Middag', start: 12, end: 16 },
+    { name: 'Avond', start: 16, end: 20 },
+  ];
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Search for the next 30 days
+  for (let i = 0; i < 30; i++) {
+    if (quickSlots.length >= 3) break;
+
+    const currentDate = new Date(today);
+    currentDate.setDate(today.getDate() + i);
+    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+
+    // Skip if we already have a slot for this day
+    if (selectedDays.has(dateStr)) continue;
+
+    try {
+      const daySlots = await getAvailableTimeSlots(dateStr, treatmentValue);
+      const availableSlots = daySlots.filter(slot => slot.available);
+
+      if (availableSlots.length > 0) {
+        for (const category of timeCategories) {
+          if (selectedCategories.has(category.name)) continue;
+
+          const slotInCategory = availableSlots.find(slot => {
+            const [hour] = slot.time.split(':').map(Number);
+            return hour >= category.start && hour < category.end;
+          });
+
+          if (slotInCategory) {
+            const dayOfWeek = currentDate.toLocaleDateString('nl-NL', { weekday: 'long' });
+            quickSlots.push({
+              date: dateStr,
+              time: slotInCategory.time,
+              label: `${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)} ${category.name.toLowerCase()}`,
+            });
+            selectedDays.add(dateStr);
+            selectedCategories.add(category.name);
+            break; // Move to the next day
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`Error fetching slots for ${dateStr}:`, error);
+    }
+  }
+
+  console.log(`✅ Found ${quickSlots.length} quick select slots.`);
+  return quickSlots;
 }
 
 // Get all available treatments

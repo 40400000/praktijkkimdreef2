@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Clock, User, MessageSquare, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Mail, ArrowUpRight, ChevronDown } from "lucide-react";
-import { getAvailableTimeSlots, getCalendarAvailability, getTreatments, type TimeSlot, type CalendarDay } from "@/lib/actions/availability";
+import { getAvailableTimeSlots, getCalendarAvailability, getTreatments, getQuickSelectSlots, type TimeSlot, type CalendarDay, type QuickSelectSlot } from "@/lib/actions/availability";
 import { createAppointment, type AppointmentData } from "@/lib/actions/appointments";
 import { Treatment } from "@/lib/db";
 
@@ -46,6 +46,8 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
   const [debugInfo, setDebugInfo] = useState<Record<string, any>>({});
   const [showDebugInfo, setShowDebugInfo] = useState(false);
+  const [quickSelectSlots, setQuickSelectSlots] = useState<QuickSelectSlot[]>([]);
+  const [loadingQuickSlots, setLoadingQuickSlots] = useState(false);
   const timeSlotsContainerRef = useRef<HTMLDivElement>(null);
 
   // Load treatments on component mount
@@ -60,6 +62,27 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
     }
     loadTreatments();
   }, []);
+
+  // Load quick select slots when treatment changes
+  useEffect(() => {
+    async function loadQuickSelectSlots() {
+      if (selectedTreatment) {
+        setLoadingQuickSlots(true);
+        setQuickSelectSlots([]);
+        try {
+          const slots = await getQuickSelectSlots(selectedTreatment);
+          setQuickSelectSlots(slots);
+        } catch (error) {
+          console.error('Error loading quick select slots:', error);
+        } finally {
+          setLoadingQuickSlots(false);
+        }
+      } else {
+        setQuickSelectSlots([]);
+      }
+    }
+    loadQuickSelectSlots();
+  }, [selectedTreatment]);
 
   // Load calendar data when month changes
   useEffect(() => {
@@ -159,9 +182,17 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
     }
   };
 
+  const handleQuickSelect = (slot: QuickSelectSlot) => {
+    const slotDate = new Date(slot.date);
+    if (slotDate.getFullYear() !== currentMonth.getFullYear() || slotDate.getMonth() !== currentMonth.getMonth()) {
+      setCurrentMonth(new Date(slotDate.getFullYear(), slotDate.getMonth(), 1));
+    }
+    setAppointmentData({ ...appointmentData, date: slot.date, time: slot.time });
+  };
+
   const handleTreatmentChange = (value: string) => {
     setSelectedTreatment(value);
-    setAppointmentData({ ...appointmentData, treatment: value });
+    setAppointmentData({ ...appointmentData, treatment: value, date: "", time: "" }); // Also reset date/time
     
     // Auto-continue to next step after a small delay
     setTimeout(() => {
@@ -267,26 +298,45 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
 
   const selectedTreatmentData = treatments.find(t => t.value === selectedTreatment);
 
-  // Helper: get the next occurrence of a weekday within the next 14 days and return ISO date string
-  function getRelativeWeekdayDate(weekdayShort: string) {
-    const map: Record<string, number> = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };
-    const target = map[weekdayShort.toLowerCase()] ?? 1;
-    const today = new Date();
-    for (let i = 0; i < 14; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
-      if (d.getDay() === target) {
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      }
+  const QuickSelectComponent = () => {
+    if (loadingQuickSlots) {
+      return (
+        <div className="bg-white p-4 rounded-xl">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Snelle opties</h3>
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="w-full p-4 rounded-lg bg-gray-100 animate-pulse h-[68px]" />
+            ))}
+          </div>
+        </div>
+      );
     }
-    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-  }
 
-  function formatIsoDateFriendly(isoDate: string) {
-    const [year, month, day] = isoDate.split('-').map(Number);
-    const d = new Date(year, (month || 1) - 1, day || 1);
-    return d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
-  }
+    if (!loadingQuickSlots && quickSelectSlots.length === 0) return null;
+
+    return (
+      <div className="bg-white p-4 rounded-xl">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Snelle opties</h3>
+        <div className="space-y-2">
+          {quickSelectSlots.map((slot) => (
+            <motion.button
+              key={slot.date + slot.time}
+              type="button"
+              onClick={() => handleQuickSelect(slot)}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full text-left p-4 rounded-lg border border-gray-200 hover:border-[#899B90] hover:bg-gray-50 transition-all duration-200"
+            >
+              <div className="font-medium text-gray-800">{slot.label}</div>
+              <div className="text-sm text-gray-500">
+                {new Date(slot.date + 'T00:00:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })} om {slot.time}
+              </div>
+            </motion.button>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen">
@@ -647,65 +697,126 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
                             })
                             )}
                           </div>
+                          
+                          {/* Location 2: Quick select under calendar if date is selected */}
+                          {appointmentData.date && (
+                            <div className="mt-8">
+                              <QuickSelectComponent />
+                            </div>
+                          )}
                         </div>
 
-                        {/* Quick Select Suggestions - below calendar, same visual style */}
-                        <div className="mt-6">
-                          <div className="bg-[#FFFFFF] border border-[#e6e8e5] rounded-xl p-4">
-                            <div className="flex items-center mb-3">
-                              <Clock className="w-4 h-4 text-[#899B90] mr-2" />
-                              <h4 className="text-sm font-medium text-gray-900">Snelle keuze</h4>
-                            </div>
+                        {/* Right Column: Time Selection or Quick Select */}
+                        <div>
+                           {appointmentData.date ? (
+                            <motion.div
+                              initial={{ opacity: 0, x: 20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.3, ease: "easeInOut" }}
+                            >
+                              <div className="flex items-center mb-4">
+                                <Clock className="w-5 h-5 text-[#899B90] mr-2" />
+                                <h3 className="text-lg font-medium text-gray-900">
+                                  Beschikbare tijden voor {(() => {
+                                    const [year, month, day] = appointmentData.date.split('-').map(Number);
+                                    const date = new Date(year, month - 1, day);
+                                    return date.toLocaleDateString('nl-NL', { 
+                                      weekday: 'short', 
+                                      day: 'numeric', 
+                                      month: 'short' 
+                                    });
+                                  })()}
+                                </h3>
+                              </div>
+                              
+                              <div className="relative">
+                                <div 
+                                  ref={timeSlotsContainerRef}
+                                  onScroll={handleTimeSlotsScroll}
+                                  className="grid grid-cols-3 gap-2 max-h-80 overflow-y-auto scroll-smooth"
+                                >
+                                  {timeSlots.map((slot) => (
+                                    <motion.button
+                                      key={slot.time}
+                                      type="button"
+                                      onClick={() => handleTimeSelect(slot.time)}
+                                      disabled={!slot.available}
+                                      whileHover={slot.available ? { scale: 1.05 } : {}}
+                                      whileTap={slot.available ? { scale: 0.95 } : {}}
+                                      className={`p-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                        appointmentData.time === slot.time
+                                          ? 'bg-[#899B90] text-white font-medium'
+                                          : slot.available
+                                          ? 'text-gray-900 hover:bg-[#899B90] hover:text-white border border-gray-200 hover:border-[#899B90]'
+                                          : 'text-gray-400 cursor-not-allowed bg-gray-50 border border-gray-200'
+                                      }`}
+                                    >
+                                      {slot.time}
+                                    </motion.button>
+                                  ))}
+                                </div>
+                                
+                                {/* Scroll Indicator */}
+                                <AnimatePresence>
+                                  {showScrollIndicator && (
+                                    <motion.div
+                                      initial={{ opacity: 0 }}
+                                      animate={{ opacity: 1 }}
+                                      exit={{ opacity: 0 }}
+                                      className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
+                                    >
+                                      {/* Gradient fade */}
+                                      <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
+                                      
+                                      {/* Scroll hint */}
+                                      <div className="absolute bottom-2 left-0 right-0 flex flex-col items-center">
+                                        <motion.div
+                                          animate={{ y: [0, 4, 0] }}
+                                          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                                          className="flex flex-col items-center"
+                                        >
+                                          <span className="text-xs text-gray-500 mb-1 font-medium">Meer tijden</span>
+                                          <ChevronDown className="w-4 h-4 text-[#899B90]" />
+                                        </motion.div>
+                                      </div>
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
 
-                            <p className="text-sm text-gray-600 mb-3">Kies snel één van deze veelgevraagde tijdsblokken (indien beschikbaar).</p>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                              {[
-                                { label: 'Woensdag - Middag', isoDate: getRelativeWeekdayDate('wed'), time: '13:00' },
-                                { label: 'Donderdag - Avond', isoDate: getRelativeWeekdayDate('thu'), time: '19:00' },
-                                { label: 'Maandag - Middag', isoDate: getRelativeWeekdayDate('mon'), time: '13:00' },
-                              ].map((opt) => {
-                                const calEntry = calendarData.find(cd => cd.date === opt.isoDate);
-                                const available = calEntry ? calEntry.hasAvailability : false;
-
-                                return (
+                              {/* Next button when time is selected */}
+                              {appointmentData.time && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: 20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                                  className="mt-6"
+                                >
                                   <button
-                                    key={`${opt.isoDate}-${opt.time}`}
-                                    type="button"
-                                    onClick={() => {
-                                      if (!selectedTreatment) {
-                                        setNotification({ type: 'error', message: 'Kies eerst een behandeling.' });
-                                        return;
-                                      }
-                                      if (!available) {
-                                        setNotification({ type: 'error', message: 'Deze datum heeft geen beschikbaarheid.' });
-                                        return;
-                                      }
-
-                                      setAppointmentData({ ...appointmentData, date: opt.isoDate, time: opt.time });
-                                    }}
-                                    className={`w-full text-left px-3 py-3 rounded-lg transition-colors duration-200 border ${available ? 'border-gray-200 hover:border-[#899B90] hover:bg-[#f7faf7]' : 'border-gray-100 bg-gray-50 cursor-not-allowed text-gray-400'}`}
-                                    disabled={!available}
+                                    onClick={handleNextStep}
+                                    className="w-full inline-flex items-center justify-center px-6 py-3 bg-[#899B90] text-white rounded-xl hover:bg-[#6d7c74] transition-colors duration-200 font-medium cursor-pointer"
                                   >
-                                    <div className="flex items-center justify-between">
-                                      <div>
-                                        <div className="text-sm font-medium text-gray-900">{opt.label}</div>
-                                        <div className="text-xs text-gray-600">{formatIsoDateFriendly(opt.isoDate)} • {opt.time}</div>
-                                      </div>
-                                      <div className={`text-xs font-medium ${available ? 'text-green-700' : 'text-red-600'}`}>
-                                        {available ? 'Beschikbaar' : 'Niet beschikbaar'}
-                                      </div>
-                                    </div>
+                                    Volgende
+                                    <ArrowRight className="ml-2 w-4 h-4" />
                                   </button>
-                                );
-                              })}
-                            </div>
-                          </div>
+                                </motion.div>
+                              )}
+                            </motion.div>
+                          ) : (
+                            <motion.div
+                              initial={{ opacity: 0, x: 20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.3, ease: "easeInOut" }}
+                              className="w-full"
+                            >
+                              <QuickSelectComponent />
+                            </motion.div>
+                          )}
                         </div>
 
                         {/* Debug Information Toggle - Only show in development */}
                         {process.env.NODE_ENV === 'development' && (
-                          <div className="mt-4 flex justify-center">
+                          <div className="mt-4 flex justify-center lg:col-span-2">
                             <button
                               type="button"
                               onClick={() => setShowDebugInfo(!showDebugInfo)}
@@ -724,7 +835,7 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
                             transition={{ duration: 0.3 }}
-                            className="mt-4 border border-gray-200 rounded-lg p-4 bg-gray-50"
+                            className="mt-4 border border-gray-200 rounded-lg p-4 bg-gray-50 lg:col-span-2"
                           >
                             <h4 className="text-sm font-medium text-gray-900 mb-3">Debug Information</h4>
                             <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -817,103 +928,6 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
                                   );
                                 })}
                             </div>
-                          </motion.div>
-                        )}
-
-                        {/* Time Selection - Show on the right when date is selected */}
-                        {appointmentData.date && (
-                          <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.3, ease: "easeInOut" }}
-                          >
-                            <div className="flex items-center mb-4">
-                              <Clock className="w-5 h-5 text-[#899B90] mr-2" />
-                              <h3 className="text-lg font-medium text-gray-900">
-                                Beschikbare tijden voor {(() => {
-                                  const [year, month, day] = appointmentData.date.split('-').map(Number);
-                                  const date = new Date(year, month - 1, day);
-                                  return date.toLocaleDateString('nl-NL', { 
-                                    weekday: 'short', 
-                                    day: 'numeric', 
-                                    month: 'short' 
-                                  });
-                                })()}
-                              </h3>
-                            </div>
-                            
-                            <div className="relative">
-                              <div 
-                                ref={timeSlotsContainerRef}
-                                onScroll={handleTimeSlotsScroll}
-                                className="grid grid-cols-3 gap-2 max-h-80 overflow-y-auto scroll-smooth"
-                              >
-                                {timeSlots.map((slot) => (
-                                  <motion.button
-                                    key={slot.time}
-                                    type="button"
-                                    onClick={() => handleTimeSelect(slot.time)}
-                                    disabled={!slot.available}
-                                    whileHover={slot.available ? { scale: 1.05 } : {}}
-                                    whileTap={slot.available ? { scale: 0.95 } : {}}
-                                    className={`p-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                      appointmentData.time === slot.time
-                                        ? 'bg-[#899B90] text-white font-medium'
-                                        : slot.available
-                                        ? 'text-gray-900 hover:bg-[#899B90] hover:text-white border border-gray-200 hover:border-[#899B90]'
-                                        : 'text-gray-400 cursor-not-allowed bg-gray-50 border border-gray-200'
-                                    }`}
-                                  >
-                                    {slot.time}
-                                  </motion.button>
-                                ))}
-                              </div>
-                              
-                              {/* Scroll Indicator */}
-                              <AnimatePresence>
-                                {showScrollIndicator && (
-                                  <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
-                                  >
-                                    {/* Gradient fade */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
-                                    
-                                    {/* Scroll hint */}
-                                    <div className="absolute bottom-2 left-0 right-0 flex flex-col items-center">
-                                      <motion.div
-                                        animate={{ y: [0, 4, 0] }}
-                                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                                        className="flex flex-col items-center"
-                                      >
-                                        <span className="text-xs text-gray-500 mb-1 font-medium">Meer tijden</span>
-                                        <ChevronDown className="w-4 h-4 text-[#899B90]" />
-                                      </motion.div>
-                                    </div>
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </div>
-
-                            {/* Next button when time is selected */}
-                            {appointmentData.time && (
-                              <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3, ease: "easeInOut" }}
-                                className="mt-6"
-                              >
-                                <button
-                                  onClick={handleNextStep}
-                                  className="w-full inline-flex items-center justify-center px-6 py-3 bg-[#899B90] text-white rounded-xl hover:bg-[#6d7c74] transition-colors duration-200 font-medium cursor-pointer"
-                                >
-                                  Volgende
-                                  <ArrowRight className="ml-2 w-4 h-4" />
-                                </button>
-                              </motion.div>
-                            )}
                           </motion.div>
                         )}
                       </div>
