@@ -96,12 +96,17 @@ export class GoogleCalendarService {
     isBlocked?: boolean;
   }): Promise<calendar_v3.Schema$Event> {
     try {
+      // Debug logging for timezone issues
+      console.log(`📅 Creating Google Calendar event: ${event.summary}`);
+      console.log(`🕐 Start time: ${event.start.toISOString()} (${event.start.toString()})`);
+      console.log(`🕐 End time: ${event.end.toISOString()} (${event.end.toString()})`);
+      
       const eventData: calendar_v3.Schema$Event = {
         summary: event.summary,
         description: event.description,
         start: {
           dateTime: event.start.toISOString(),
-          timeZone: 'Europe/Amsterdam', // Adjust to your timezone
+          timeZone: 'Europe/Amsterdam',
         },
         end: {
           dateTime: event.end.toISOString(),

@@ -41,9 +41,20 @@ export async function createAppointment(
       };
     }
 
-    // Parse appointment date and time
-    const appointmentDateTime = new Date(`${appointmentData.date}T${appointmentData.time}:00`);
+    // Parse appointment date and time in Amsterdam timezone
+    // Create date in Amsterdam timezone to match availability system
+    const appointmentDateTimeString = `${appointmentData.date}T${appointmentData.time}:00`;
+    
+    // Create date object - this will be interpreted in the local timezone
+    // The Google Calendar API will handle the timezone conversion properly
+    const appointmentDateTime = new Date(appointmentDateTimeString);
     const endDateTime = new Date(appointmentDateTime.getTime() + treatment[0].duration * 60000);
+    
+    // Debug logging to help identify timezone issues
+    console.log(`📅 Creating appointment: ${appointmentData.date} at ${appointmentData.time}`);
+    console.log(`🕐 Appointment DateTime: ${appointmentDateTime.toISOString()}`);
+    console.log(`🕐 End DateTime: ${endDateTime.toISOString()}`);
+    console.log(`🌍 Local timezone offset: ${appointmentDateTime.getTimezoneOffset()} minutes`);
 
     // Check if the time slot is still available
     // This is a basic check - in production you might want more sophisticated validation

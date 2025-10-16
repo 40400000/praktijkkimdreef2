@@ -312,7 +312,6 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
       );
     }
 
-    // Only show if we have available slots
     if (!loadingQuickSlots && quickSelectSlots.length === 0) return null;
 
     return (
