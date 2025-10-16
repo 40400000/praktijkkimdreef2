@@ -19,11 +19,6 @@ export interface AvailabilityOptions {
 // This ensures X minutes gap BETWEEN appointments (not before the first or after the last)
 const POST_APPOINTMENT_BUFFER_MINUTES = 15;
 
-export interface QuickPickSlot {
-  date: string;
-  time: string;
-}
-
 export class AvailabilityService {
   private calendarService: GoogleCalendarService;
 
@@ -702,114 +697,6 @@ export class AvailabilityService {
     const endMinutes = endHour * 60 + endMinute;
     
     return endMinutes - startMinutes;
-  }
-
-  private async findFirstAvailableSlotForDay(
-    date: Date,
-    dayEvents: calendar_v3.Schema$Event[],
-    treatmentDuration: number = 60
-  ): Promise<TimeSlot | null> {
-    const dayOfWeek = date.getDay();
-    const workingHours = await this.getWorkingHours(dayOfWeek);
-    const vrijEvents = this.findVrijEvents(dayEvents);
-
-    if (!workingHours && vrijEvents.length === 0) {
-      return null;
-    }
-    
-    let extendedHours: { startTime: string; endTime: string };
-    if (workingHours) {
-      extendedHours = this.calculateExtendedHours(workingHours, vrijEvents, date);
-    } else {
-      extendedHours = this.calculateVrijOnlyHours(vrijEvents, date);
-    }
-    
-    const blockingEvents = dayEvents.filter(event => !this.isVrijEvent(event));
-    
-    const timeSlots = this.generateTimeSlots(
-      extendedHours.startTime,
-      extendedHours.endTime,
-      treatmentDuration,
-      15 
-    );
-
-    const now = new Date();
-    const isToday = date.toDateString() === now.toDateString();
-    const currentTime = now.getHours() * 60 + now.getMinutes();
-
-    for (let i = 0; i < timeSlots.length; i++) {
-      const slot = timeSlots[i];
-
-      if (isToday) {
-        const [hours, minutes] = slot.time.split(':').map(Number);
-        if (hours * 60 + minutes <= currentTime) {
-          continue; // Skip past slots for today
-        }
-      }
-
-      const slotStart = this.parseTimeToDate(date, slot.time);
-      const slotEnd = new Date(slotStart.getTime() + treatmentDuration * 60000);
-      
-      const isLastSlot = i === timeSlots.length - 1;
-      const slotEndWithBuffer = isLastSlot 
-        ? slotEnd 
-        : new Date(slotEnd.getTime() + 15 * 60000);
-      
-      const conflictingEvent = this.findConflictingEvent(blockingEvents, slotStart, slotEndWithBuffer);
-      if (!conflictingEvent) {
-        return slot; // Return the first available slot
-      }
-    }
-    
-    return null; // No available slots for this day
-  }
-
-  async findNextAvailableSlots(treatmentDuration: number, count: number = 3): Promise<QuickPickSlot[]> {
-      const quickPicks: QuickPickSlot[] = [];
-      let currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0);
-
-      const endDate = new Date(currentDate);
-      endDate.setDate(endDate.getDate() + 90); // Search up to 90 days in the future
-
-      console.log(`🔍 [findNextAvailableSlots] Searching for ${count} slots with duration ${treatmentDuration}min between ${currentDate.toDateString()} and ${endDate.toDateString()}`);
-      const allEvents = await this.calendarService.getEvents(currentDate, endDate);
-      console.log(`🔍 [findNextAvailableSlots] Found ${allEvents.length} total events to check against.`);
-
-      for (let i = 0; i < 90 && quickPicks.length < count; i++) {
-          // Skip past dates
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          if (currentDate < today) {
-              currentDate.setDate(currentDate.getDate() + 1);
-              continue;
-          }
-
-          const dayEvents = allEvents.filter(event => {
-              if (!event.start?.dateTime) return false;
-              // Ensure we are comparing dates in the same way
-              const eventDate = new Date(event.start.dateTime);
-              return eventDate.getFullYear() === currentDate.getFullYear() &&
-                     eventDate.getMonth() === currentDate.getMonth() &&
-                     eventDate.getDate() === currentDate.getDate();
-          });
-
-          const firstSlot = await this.findFirstAvailableSlotForDay(currentDate, dayEvents, treatmentDuration);
-          
-          if (firstSlot) {
-              const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
-              quickPicks.push({
-                  date: dateStr,
-                  time: firstSlot.time,
-              });
-              console.log(`✅ [findNextAvailableSlots] Found available slot on ${dateStr} at ${firstSlot.time}`);
-          }
-
-          currentDate.setDate(currentDate.getDate() + 1);
-      }
-      
-      console.log(`✅ [findNextAvailableSlots] Finished search. Found ${quickPicks.length} slots.`);
-      return quickPicks;
   }
 }
 

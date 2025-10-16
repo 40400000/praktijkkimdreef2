@@ -21,11 +21,6 @@ export interface CalendarDay {
   isToday: boolean;
 }
 
-export interface QuickPickSlot {
-  date: string;
-  time: string;
-}
-
 // Get available time slots for a specific date and treatment
 export async function getAvailableTimeSlots(
   date: string,
@@ -211,28 +206,6 @@ export async function getTreatments() {
       { id: 3, value: "homeopathie-qest4", label: "Homeopathie met Qest4 test", duration: 60, price: null, active: true, createdAt: new Date() },
       { id: 4, value: "homeopathie-vervolg", label: "Homeopathie - Vervolgconsult", duration: 30, price: null, active: true, createdAt: new Date() },
     ];
-  }
-}
-
-export async function getFirstAvailableSlots(treatmentValue: string): Promise<QuickPickSlot[]> {
-  try {
-    console.log(`🎯 Getting first available slots for treatment: ${treatmentValue}`);
-    const treatment = await db
-      .select()
-      .from(treatments)
-      .where(eq(treatments.value, treatmentValue))
-      .limit(1);
-
-    if (!treatment[0]) {
-      console.error(`❌ Treatment not found: ${treatmentValue}`);
-      throw new Error('Treatment not found');
-    }
-
-    const slots = await availabilityService.findNextAvailableSlots(treatment[0].duration);
-    return slots;
-  } catch (error) {
-    console.error('❌ Error getting first available slots:', error);
-    throw new Error('Failed to get first available slots');
   }
 }
 

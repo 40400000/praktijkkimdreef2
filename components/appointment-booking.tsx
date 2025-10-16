@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Clock, User, MessageSquare, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Mail, ArrowUpRight, ChevronDown } from "lucide-react";
-import { getAvailableTimeSlots, getCalendarAvailability, getFirstAvailableSlots, getTreatments, type TimeSlot, type CalendarDay, type QuickPickSlot } from "@/lib/actions/availability";
+import { getAvailableTimeSlots, getCalendarAvailability, getTreatments, type TimeSlot, type CalendarDay } from "@/lib/actions/availability";
 import { createAppointment, type AppointmentData } from "@/lib/actions/appointments";
 import { Treatment } from "@/lib/db";
 
@@ -47,8 +47,6 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
   const [debugInfo, setDebugInfo] = useState<Record<string, any>>({});
   const [showDebugInfo, setShowDebugInfo] = useState(false);
   const timeSlotsContainerRef = useRef<HTMLDivElement>(null);
-  const [quickPickSlots, setQuickPickSlots] = useState<QuickPickSlot[]>([]);
-  const [loadingQuickPicks, setLoadingQuickPicks] = useState(false);
 
   // Load treatments on component mount
   useEffect(() => {
@@ -110,24 +108,6 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
     }
     loadCalendarData();
   }, [currentMonth, selectedTreatment, treatments]);
-
-  useEffect(() => {
-    async function loadQuickPicks() {
-      if (selectedTreatment) {
-        setLoadingQuickPicks(true);
-        setQuickPickSlots([]);
-        try {
-          const slots = await getFirstAvailableSlots(selectedTreatment);
-          setQuickPickSlots(slots);
-        } catch (error) {
-          console.error('Error loading quick pick slots:', error);
-        } finally {
-          setLoadingQuickPicks(false);
-        }
-      }
-    }
-    loadQuickPicks();
-  }, [selectedTreatment, treatments]);
 
   // Load time slots when date changes
   useEffect(() => {
@@ -202,19 +182,6 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
 
   const handleTimeSelect = (time: string) => {
     setAppointmentData({ ...appointmentData, time });
-  };
-
-  const handleQuickPickSelect = (date: string, time: string) => {
-    const [year, month] = date.split('-').map(Number);
-    const newMonthDate = new Date(year, month - 1, 1);
-
-    // Check if we need to change the month in the calendar view
-    if (newMonthDate.getFullYear() !== currentMonth.getFullYear() || newMonthDate.getMonth() !== currentMonth.getMonth()) {
-      setCurrentMonth(newMonthDate);
-    }
-    
-    // Set date and time for the appointment
-    setAppointmentData({ ...appointmentData, date, time });
   };
 
   // Month navigation functions
@@ -660,41 +627,6 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
                             )}
                           </div>
                         </div>
-
-                        {/* Quick Picks Section */}
-                        {subStep === 2 && (
-                          <div className="mt-8 pt-8 border-t border-gray-200">
-                            <h3 className="text-base font-medium text-gray-800 mb-4 text-center">Of kies een van de eerstvolgende mogelijkheden:</h3>
-                            {loadingQuickPicks ? (
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {/* Skeletons */}
-                                <div className="h-20 bg-gray-100 rounded-xl animate-pulse" />
-                                <div className="h-20 bg-gray-100 rounded-xl animate-pulse" />
-                                <div className="h-20 bg-gray-100 rounded-xl animate-pulse" />
-                              </div>
-                            ) : quickPickSlots.length > 0 ? (
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {quickPickSlots.map((slot) => (
-                                  <motion.button
-                                    key={`${slot.date}-${slot.time}`}
-                                    type="button"
-                                    onClick={() => handleQuickPickSelect(slot.date, slot.time)}
-                                    whileHover={{ scale: 1.03 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="p-4 border border-gray-200 rounded-xl text-center hover:border-[#899B90] hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#899B90] focus:ring-offset-2"
-                                  >
-                                    <div className="font-medium text-gray-900 text-sm">
-                                      {new Date(`${slot.date}T00:00:00`).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'short' })}
-                                    </div>
-                                    <div className="text-xl text-[#899B90] font-bold mt-1">{slot.time}</div>
-                                  </motion.button>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-center text-gray-500 text-sm">Geen beschikbare tijden gevonden in de komende 3 maanden.</p>
-                            )}
-                          </div>
-                        )}
 
                         {/* Debug Information Toggle - Only show in development */}
                         {process.env.NODE_ENV === 'development' && (
