@@ -138,7 +138,6 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
       if (appointmentData.date && selectedTreatment) {
         console.log(`🔍 [UI] Loading time slots for ${appointmentData.date} with treatment ${selectedTreatment}`);
         setLoading(true);
-        setTimeSlots([]); // Clear previous slots
         try {
           const slots = await getAvailableTimeSlots(appointmentData.date, selectedTreatment);
           console.log(`✅ [UI] Received ${slots.length} time slots, ${slots.filter(s => s.available).length} available`);
@@ -313,6 +312,7 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
       );
     }
 
+    // Only show if we have available slots
     if (!loadingQuickSlots && quickSelectSlots.length === 0) return null;
 
     return (
@@ -733,36 +733,25 @@ export default function AppointmentBooking({ onStepChange }: AppointmentBookingP
                                 onScroll={handleTimeSlotsScroll}
                                 className="grid grid-cols-3 gap-2 max-h-80 overflow-y-auto scroll-smooth"
                               >
-                                {loading ? (
-                                  Array.from({ length: 9 }).map((_, index) => (
-                                    <div key={index} className="p-2 rounded-lg h-[40px] bg-gray-100 animate-pulse" />
-                                  ))
-                                ) : (
-                                  <>
-                                    {timeSlots.filter(slot => slot.available).length > 0 ? (
-                                      timeSlots.filter(slot => slot.available).map((slot) => (
-                                        <motion.button
-                                          key={slot.time}
-                                          type="button"
-                                          onClick={() => handleTimeSelect(slot.time)}
-                                          whileHover={{ scale: 1.05 }}
-                                          whileTap={{ scale: 0.95 }}
-                                          className={`p-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                            appointmentData.time === slot.time
-                                              ? 'bg-[#899B90] text-white font-medium'
-                                              : 'text-gray-900 hover:bg-[#899B90] hover:text-white border border-gray-200 hover:border-[#899B90]'
-                                          }`}
-                                        >
-                                          {slot.time}
-                                        </motion.button>
-                                      ))
-                                    ) : (
-                                      <div className="col-span-3 text-center text-sm text-gray-500 py-4">
-                                        Geen beschikbare tijden op deze datum.
-                                      </div>
-                                    )}
-                                  </>
-                                )}
+                                {timeSlots.map((slot) => (
+                                  <motion.button
+                                    key={slot.time}
+                                    type="button"
+                                    onClick={() => handleTimeSelect(slot.time)}
+                                    disabled={!slot.available}
+                                    whileHover={slot.available ? { scale: 1.05 } : {}}
+                                    whileTap={slot.available ? { scale: 0.95 } : {}}
+                                    className={`p-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                      appointmentData.time === slot.time
+                                        ? 'bg-[#899B90] text-white font-medium'
+                                        : slot.available
+                                        ? 'text-gray-900 hover:bg-[#899B90] hover:text-white border border-gray-200 hover:border-[#899B90]'
+                                        : 'text-gray-400 cursor-not-allowed bg-gray-50 border border-gray-200'
+                                    }`}
+                                  >
+                                    {slot.time}
+                                  </motion.button>
+                                ))}
                               </div>
                               
                               {/* Scroll Indicator */}
