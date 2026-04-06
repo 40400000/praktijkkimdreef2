@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function TarievenPage() {
   const orthomoleculairTarieven = [
-    { service: "Intake consult", price: "€95,-" },
-    { service: "Vervolgconsult", price: "€65,-" },
+    { service: "Intake consult", price: "€105,-" },
+    { service: "Vervolgconsult", price: "€67,50" },
   ];
 
   const algemeneInformatie = [
@@ -153,8 +153,8 @@ export default function TarievenPage() {
             <h2 className="text-2xl font-light text-gray-900 mb-6">Annuleringsbeleid</h2>
             <div className="bg-[#f8f9fa] rounded-xl p-5">
               <p className="text-gray-700 text-sm leading-relaxed mb-3">
-                Bij het geen doorgang kunnen vinden van de afspraak wordt er 50% van het tarief van de voorgenomen 
-                behandeling in rekening gebracht, tenzij de afspraak minimaal 24 uur van te voren is afgezegd.
+                Bij het geen doorgang kunnen vinden van de afspraak wordt er 50% van het tarief van de voorgenomen
+                behandeling in rekening gebracht, tenzij de afspraak minimaal 48 uur van te voren is afgezegd.
               </p>
               <p className="text-gray-700 text-sm leading-relaxed">
                 De prijzen voor de middelen zijn exclusief de verzendkosten.<br />

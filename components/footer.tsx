@@ -3,12 +3,8 @@ import Link from "next/link";
 
 export default function Footer() {
   const openingHours = [
-    { day: "Maandag", hours: "8.30 – 21.00" },
-    { day: "Dinsdag", hours: "8.30 – 18.00" },
-    { day: "Woensdag", hours: "8.30 – 21.00" },
-    { day: "Donderdag", hours: "8.30 – 18.00" },
-    { day: "Vrijdag", hours: "8.30 – 18.00" },
-    { day: "Zaterdag", hours: "Gesloten" },
+    { day: "Ma t/m vr", hours: "11:00 – 18:00" },
+    { day: "Zaterdag", hours: "Op afspraak" },
     { day: "Zondag", hours: "Gesloten" },
   ];
 
@@ -95,7 +91,7 @@ export default function Footer() {
                 href="/contact" 
                 className="block text-base text-white/90 hover:text-white transition-colors duration-200"
               >
-                Contact & over mij
+                Contact
               </Link>
               <Link 
                 href="/afspraak-maken" 
