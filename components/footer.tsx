@@ -91,7 +91,7 @@ export default function Footer() {
                 href="/contact" 
                 className="block text-base text-white/90 hover:text-white transition-colors duration-200"
               >
-                Contact
+                Contact & over mij
               </Link>
               <Link 
                 href="/afspraak-maken" 

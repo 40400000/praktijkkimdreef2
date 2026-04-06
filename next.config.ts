@@ -3,13 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   async redirects() {
     return [
-      // Home page redirect
-      // Contact page redirect
-      {
-        source: '/contact',
-        destination: '/contact',
-        permanent: true,
-      },
       // Orthomoleculaire therapie redirect
       {
         source: '/orthomoleculaire-therapie',
@@ -22,10 +15,10 @@ const nextConfig: NextConfig = {
         destination: '/qest',
         permanent: true,
       },
-      // Over-mij redirect (no about page exists, redirect to home)
+      // Over-mij redirect to contact page
       {
         source: '/over-mij',
-        destination: '/',
+        destination: '/contact',
         permanent: true,
       },
     ];

@@ -1,8 +1,9 @@
+import Image from "next/image";
 import { Mail, Phone, MapPin, Clock, Calendar } from "lucide-react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Contact",
+  title: "Contact & over mij",
   description: "Neem contact op met Praktijk Kim Dreef voor vragen over orthomoleculaire therapie en homeopathie. Gevestigd in Apeldoorn.",
 };
 
@@ -22,21 +23,61 @@ export default function ContactPage() {
       <section className="relative py-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="rounded-3xl p-8 lg:p-12 bg-[#899B90]">
-            <div className="text-center">
-              <h1 className="text-3xl lg:text-4xl font-light text-white leading-tight mb-4">
-                Contact
-              </h1>
-              <p className="text-lg text-white/90 leading-relaxed max-w-2xl mx-auto">
-                Heeft u vragen of wilt u een afspraak maken? Neem gerust contact op!
-              </p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+              <div className="space-y-6">
+                <h1 className="text-3xl lg:text-4xl font-light text-white leading-tight">
+                  Contact & over mij
+                </h1>
+                <p className="text-lg text-white/90 leading-relaxed">
+                  Mijn naam is Kim Dreef en ik heb een orthomoleculaire en homeopatische praktijk voor mens & dier in Apeldoorn.
+                </p>
+              </div>
+              <div className="relative">
+                <div className="relative rounded-2xl overflow-hidden aspect-[4/3]">
+                  <Image
+                    src="/kim_hero_foto.jpg"
+                    alt="Kim Dreef - Praktijk voor orthomoleculaire therapie en homeopathie"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Contact Info Section */}
+      {/* Over mij */}
       <section className="py-12 lg:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+
+          <div className="space-y-6 text-gray-700 leading-relaxed text-lg">
+            <p>
+              Na mijn studie HBO-Verpleegkunde heb ik een aantal jaren in het algemeen ziekenhuis gewerkt.
+              Omdat mijn hart toch meer uit ging naar de dieren besloot ik de opleiding tot Klassiek Homeopaat
+              voor dieren te gaan doen.
+            </p>
+            <p>
+              In de tussentijd deed ik ook de opleiding tot Celzouttherapeut. De afgelopen jaren heb ik een mooie
+              praktijk opgezet waarin ik mensen en dieren help met zowel chronische als acute klachten!
+            </p>
+            <p>
+              Inmiddels ben ik ook afgestudeerd in de Orthomoleculaire Geneeskunde.
+            </p>
+
+            <div className="bg-[#899B90] rounded-2xl p-8 lg:p-10">
+              <p className="text-white/95 text-xl leading-relaxed italic">
+                &ldquo;In mijn praktijk voor mens en dier is geen klacht te groot of te klein. Samen gaan we op zoek naar
+                antwoorden en daarvoor gebruik ik de Qest 4. Dit is een geavanceerd apparaat
+                dat mij helpt te begrijpen wat er allemaal speelt in jouw lichaam.&rdquo;
+              </p>
+            </div>
+
+            <p className="text-xl font-medium text-gray-900 mt-8">
+              Hartelijke groet,<br />
+              <span className="text-[#899B90]">Kim</span>
+            </p>
+          </div>
 
           {/* Contact Details Card */}
           <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100">
@@ -101,7 +142,7 @@ export default function ContactPage() {
               <Calendar className="w-6 h-6 text-white mr-4 mt-1 flex-shrink-0" />
               <div>
                 <h2 className="text-2xl font-light text-white mb-4">Afspraak maken</h2>
-                <p className="text-white/90 text-lg leading-relaxed mb-4">
+                <p className="text-white/90 text-lg leading-relaxed">
                   Een afspraak maken kan eenvoudig per e-mail. Stuur een bericht naar{" "}
                   <a
                     href="mailto:info@praktijkkimdreef.nl"
@@ -140,7 +181,7 @@ export default function ContactPage() {
                 <p className="text-sm text-gray-600 mb-3">Op de volgende zaterdagen ben ik geopend van 10:00 – 17:00:</p>
                 <ul className="grid grid-cols-2 gap-2">
                   {zaterdagData.map((datum) => (
-                    <li key={datum} className="text-sm text-gray-700">• {datum}</li>
+                    <li key={datum} className="text-sm text-gray-700">{datum}</li>
                   ))}
                 </ul>
               </div>
