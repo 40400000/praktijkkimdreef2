@@ -24,8 +24,8 @@ export default function Navbar() {
   ];
 
   const dropdownItems = [
+    { name: "Contact", href: "/contact" },
     { name: "Tarieven", href: "/tarieven" },
-    { name: "Contact & over mij", href: "/contact" },
   ];
 
   return (
