@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: "%s | Praktijk Kim Dreef",
   },
   description: "Praktijk voor orthomoleculaire therapie en homeopathie voor mens en dier. Gespecialiseerd in natuurlijke geneeswijzen en Qest4 diagnostiek.",
-  keywords: ["orthomoleculaire therapie", "homeopathie", "natuurlijke geneeswijze", "Qest4", "Kim Dreef", "veterinaire homeopathie"],
+  keywords: ["orthomoleculaire therapie", "homeopathie", "natuurlijke geneeswijze", "Qest4", "Kim Dreef", "Apeldoorn", "veterinaire homeopathie"],
   authors: [{ name: "Kim Dreef" }],
   creator: "Kim Dreef",
   openGraph: {
