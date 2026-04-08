@@ -1,4 +1,5 @@
 import { Mail, Phone, MapPin, Clock, Calendar, ArrowUpRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { Metadata } from "next";
 
@@ -40,24 +41,37 @@ export default function ContactPage() {
 
           {/* Over mij */}
           <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100">
-            <h2 className="text-2xl font-light text-gray-900 mb-6">Over mij</h2>
-            <div className="space-y-4 text-gray-600 leading-relaxed">
-              <p>
-                Mijn naam is Kim Dreef en ik heb een Orthomoleculaire en Homeopatische praktijk voor mens & dier in Apeldoorn.
-              </p>
-              <p>
-                Na mijn studie HBO-Verpleegkunde heb ik een aantal jaren in het algemeen ziekenhuis gewerkt. Omdat mijn hart toch meer uit ging naar de dieren besloot ik de opleiding tot Klassiek Homeopaat voor dieren te gaan doen.
-              </p>
-              <p>
-                In de tussentijd deed ik ook de opleiding tot Celzouttherapeut. De afgelopen jaren heb ik een mooie praktijk opgezet waarin ik mensen en dieren help met zowel chronische als acute klachten! Inmiddels ben ik ook afgestudeerd in de Orthomoleculaire Geneeskunde.
-              </p>
-              <p>
-                In mijn praktijk voor mens en dier is geen klacht te groot of te klein. Samen gaan we op zoek naar antwoorden en daarvoor gebruik ik de Qest 4, vroeger de AsyraPro. Dit is een geavanceerd apparaat dat mij helpt te begrijpen wat er allemaal speelt in jouw lichaam.
-              </p>
-              <p>
-                Als je nieuwsgierig bent geworden en wellicht op zoek bent naar een oplossing die jou persoonlijk kan helpen richting een gezonder leven, neem een kijkje op mijn website of neem contact met mij op.
-              </p>
-              <p className="text-gray-700 font-medium">Hartelijke groet, Kim</p>
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr,auto] gap-8 items-start">
+              <div>
+                <h2 className="text-2xl font-light text-gray-900 mb-6">Over mij</h2>
+                <div className="space-y-4 text-gray-600 leading-relaxed">
+                  <p>
+                    Mijn naam is Kim Dreef en ik heb een Orthomoleculaire en Homeopatische praktijk voor mens & dier in Apeldoorn.
+                  </p>
+                  <p>
+                    Na mijn studie HBO-Verpleegkunde heb ik een aantal jaren in het algemeen ziekenhuis gewerkt. Omdat mijn hart toch meer uit ging naar de dieren besloot ik de opleiding tot Klassiek Homeopaat voor dieren te gaan doen.
+                  </p>
+                  <p>
+                    In de tussentijd deed ik ook de opleiding tot Celzouttherapeut. De afgelopen jaren heb ik een mooie praktijk opgezet waarin ik mensen en dieren help met zowel chronische als acute klachten! Inmiddels ben ik ook afgestudeerd in de Orthomoleculaire Geneeskunde.
+                  </p>
+                  <p>
+                    In mijn praktijk voor mens en dier is geen klacht te groot of te klein. Samen gaan we op zoek naar antwoorden en daarvoor gebruik ik de Qest 4, vroeger de AsyraPro. Dit is een geavanceerd apparaat dat mij helpt te begrijpen wat er allemaal speelt in jouw lichaam.
+                  </p>
+                  <p>
+                    Als je nieuwsgierig bent geworden en wellicht op zoek bent naar een oplossing die jou persoonlijk kan helpen richting een gezonder leven, neem een kijkje op mijn website of neem contact met mij op.
+                  </p>
+                  <p className="text-gray-700 font-medium">Hartelijke groet, Kim</p>
+                </div>
+              </div>
+              <div className="relative rounded-2xl overflow-hidden w-full lg:w-64 xl:w-72 flex-shrink-0">
+                <Image
+                  src="/kim_hero_foto.jpg"
+                  alt="Kim Dreef - Orthomoleculaire therapie en homeopathie"
+                  width={600}
+                  height={800}
+                  className="w-full h-auto object-cover rounded-2xl"
+                />
+              </div>
             </div>
           </div>
 
