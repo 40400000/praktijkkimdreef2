@@ -48,61 +48,59 @@ export default function AfspraakMakenPage() {
 
       {/* Consult Selection / Booking */}
       <section className="py-12 lg:py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          {!selected ? (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-light text-gray-900 text-center mb-8">
-                Welk consult wilt u inplannen?
-              </h2>
+        {!selected ? (
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+            <h2 className="text-2xl font-light text-gray-900 text-center mb-8">
+              Welk consult wilt u inplannen?
+            </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {consultTypes.map((consult) => (
-                  <button
-                    key={consult.id}
-                    onClick={() => setSelected(consult.id)}
-                    className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100 text-left hover:border-[#899B90]/40 hover:shadow-md transition-all duration-200 group cursor-pointer"
-                  >
-                    <h3 className="text-xl font-medium text-gray-900 mb-3 group-hover:text-[#899B90] transition-colors duration-200">
-                      {consult.title}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed mb-4">
-                      {consult.description}
-                    </p>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Clock className="w-4 h-4 mr-2 text-[#899B90]" />
-                      {consult.duration}
-                    </div>
-                  </button>
-                ))}
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {consultTypes.map((consult) => (
+                <button
+                  key={consult.id}
+                  onClick={() => setSelected(consult.id)}
+                  className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100 text-left hover:border-[#899B90]/40 hover:shadow-md transition-all duration-200 group cursor-pointer"
+                >
+                  <h3 className="text-xl font-medium text-gray-900 mb-3 group-hover:text-[#899B90] transition-colors duration-200">
+                    {consult.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed mb-4">
+                    {consult.description}
+                  </p>
+                  <div className="flex items-center text-sm text-gray-500">
+                    <Clock className="w-4 h-4 mr-2 text-[#899B90]" />
+                    {consult.duration}
+                  </div>
+                </button>
+              ))}
             </div>
-          ) : (
-            <div className="space-y-6">
-              <button
-                onClick={() => setSelected(null)}
-                className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors duration-200 cursor-pointer"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Ander consult kiezen
-              </button>
+          </div>
+        ) : (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+            <button
+              onClick={() => setSelected(null)}
+              className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors duration-200 cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Ander consult kiezen
+            </button>
 
-              <div className="bg-white rounded-3xl p-2 shadow-sm border border-gray-100 overflow-hidden">
-                <Cal
-                  calLink={selectedConsult!.calLink}
-                  config={{
-                    layout: "month_view",
-                    theme: "light",
-                  }}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    overflow: "auto",
-                  }}
-                />
-              </div>
+            <div className="bg-white rounded-3xl p-2 shadow-sm border border-gray-100 overflow-hidden">
+              <Cal
+                calLink={selectedConsult!.calLink}
+                config={{
+                  layout: "month_view",
+                  theme: "light",
+                }}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  overflow: "auto",
+                }}
+              />
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </section>
     </main>
   );
