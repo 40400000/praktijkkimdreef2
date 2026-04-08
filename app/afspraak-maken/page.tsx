@@ -59,15 +59,15 @@ export default function AfspraakMakenPage() {
                 <button
                   key={consult.id}
                   onClick={() => setSelected(consult.id)}
-                  className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100 text-left hover:border-[#899B90]/40 hover:shadow-md transition-all duration-200 group cursor-pointer"
+                  className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100 text-left hover:border-[#899B90]/40 hover:shadow-md transition-all duration-200 group cursor-pointer flex flex-col"
                 >
                   <h3 className="text-xl font-medium text-gray-900 mb-3 group-hover:text-[#899B90] transition-colors duration-200">
                     {consult.title}
                   </h3>
-                  <p className="text-gray-600 leading-relaxed mb-4">
+                  <p className="text-gray-600 leading-relaxed flex-1">
                     {consult.description}
                   </p>
-                  <div className="flex items-center text-sm text-gray-500">
+                  <div className="flex items-center text-sm text-gray-500 mt-4 pt-4 border-t border-gray-100">
                     <Clock className="w-4 h-4 mr-2 text-[#899B90]" />
                     {consult.duration}
                   </div>
