@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Cal from "@calcom/embed-react";
-import { Clock, ArrowLeft } from "lucide-react";
+import { Clock, ArrowLeft, Mail } from "lucide-react";
 
 const consultTypes = [
   {
@@ -74,6 +74,17 @@ export default function AfspraakMakenPage() {
                 </button>
               ))}
             </div>
+
+            <p className="text-center text-gray-500 text-sm flex items-center justify-center gap-2">
+              <Mail className="w-4 h-4" />
+              Of mail naar{" "}
+              <a
+                href="mailto:info@praktijkkimdreef.nl"
+                className="text-[#899B90] hover:text-[#6d7c74] transition-colors duration-200 underline underline-offset-2"
+              >
+                info@praktijkkimdreef.nl
+              </a>
+            </p>
           </div>
         ) : (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
