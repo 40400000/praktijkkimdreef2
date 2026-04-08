@@ -1,4 +1,4 @@
-import { db, treatments, availabilityRules } from './index';
+import { db, treatments } from './index';
 
 export async function seedDatabase() {
   try {
@@ -35,17 +35,6 @@ export async function seedDatabase() {
         active: true,
       },
     ]).onConflictDoNothing();
-
-    // Seed working hours (Monday to Friday, 12:30 PM to 5:30 PM)
-    const workingHours = [
-      { dayOfWeek: 1, startTime: '12:30', endTime: '17:30' }, // Monday
-      { dayOfWeek: 2, startTime: '12:30', endTime: '17:30' }, // Tuesday
-      { dayOfWeek: 3, startTime: '12:30', endTime: '17:30' }, // Wednesday
-      { dayOfWeek: 4, startTime: '12:30', endTime: '17:30' }, // Thursday
-      { dayOfWeek: 5, startTime: '12:30', endTime: '17:30' }, // Friday
-    ];
-
-    await db.insert(availabilityRules).values(workingHours).onConflictDoNothing();
 
     console.log('Database seeded successfully!');
   } catch (error) {
