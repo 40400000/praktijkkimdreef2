@@ -72,7 +72,7 @@ export default function Footer() {
                 Homeopathie
               </Link>
               <Link 
-                href="/qest4" 
+                href="/qest" 
                 className="block text-base text-white/90 hover:text-white transition-colors duration-200"
               >
                 Qest4
