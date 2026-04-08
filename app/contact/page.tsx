@@ -1,8 +1,9 @@
-import { Mail, Phone, MapPin, Clock, Calendar } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, Calendar, ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Contact",
+  title: "Contact & Over mij",
   description: "Neem contact op met Praktijk Kim Dreef voor vragen over orthomoleculaire therapie en homeopathie. Gevestigd in Apeldoorn.",
 };
 
@@ -24,7 +25,7 @@ export default function ContactPage() {
           <div className="rounded-3xl p-8 lg:p-12 bg-[#899B90]">
             <div className="text-center">
               <h1 className="text-3xl lg:text-4xl font-light text-white leading-tight mb-4">
-                Contact
+                Contact & Over mij
               </h1>
               <p className="text-lg text-white/90 leading-relaxed max-w-2xl mx-auto">
                 Heeft u vragen of wilt u een afspraak maken? Neem gerust contact op!
@@ -34,9 +35,31 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Contact Info Section */}
       <section className="py-12 lg:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+
+          {/* Over mij */}
+          <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100">
+            <h2 className="text-2xl font-light text-gray-900 mb-6">Over mij</h2>
+            <div className="space-y-4 text-gray-600 leading-relaxed">
+              <p>
+                Mijn naam is Kim Dreef en ik heb een Orthomoleculaire en Homeopatische praktijk voor mens & dier in Apeldoorn.
+              </p>
+              <p>
+                Na mijn studie HBO-Verpleegkunde heb ik een aantal jaren in het algemeen ziekenhuis gewerkt. Omdat mijn hart toch meer uit ging naar de dieren besloot ik de opleiding tot Klassiek Homeopaat voor dieren te gaan doen.
+              </p>
+              <p>
+                In de tussentijd deed ik ook de opleiding tot Celzouttherapeut. De afgelopen jaren heb ik een mooie praktijk opgezet waarin ik mensen en dieren help met zowel chronische als acute klachten! Inmiddels ben ik ook afgestudeerd in de Orthomoleculaire Geneeskunde.
+              </p>
+              <p>
+                In mijn praktijk voor mens en dier is geen klacht te groot of te klein. Samen gaan we op zoek naar antwoorden en daarvoor gebruik ik de Qest 4, vroeger de AsyraPro. Dit is een geavanceerd apparaat dat mij helpt te begrijpen wat er allemaal speelt in jouw lichaam.
+              </p>
+              <p>
+                Als je nieuwsgierig bent geworden en wellicht op zoek bent naar een oplossing die jou persoonlijk kan helpen richting een gezonder leven, neem een kijkje op mijn website of neem contact met mij op.
+              </p>
+              <p className="text-gray-700 font-medium">Hartelijke groet, Kim</p>
+            </div>
+          </div>
 
           {/* Contact Details Card */}
           <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100">
@@ -102,15 +125,15 @@ export default function ContactPage() {
               <div>
                 <h2 className="text-2xl font-light text-white mb-4">Afspraak maken</h2>
                 <p className="text-white/90 text-lg leading-relaxed mb-4">
-                  Een afspraak maken kan eenvoudig per e-mail. Stuur een bericht naar{" "}
-                  <a
-                    href="mailto:info@praktijkkimdreef.nl"
-                    className="text-white underline underline-offset-2 hover:text-white/80 transition-colors duration-200"
-                  >
-                    info@praktijkkimdreef.nl
-                  </a>{" "}
-                  met een korte omschrijving van uw klacht en uw beschikbaarheid. Ik neem zo spoedig mogelijk contact met u op.
+                  Plan direct online een afspraak in op een moment dat u uitkomt.
                 </p>
+                <Link
+                  href="/afspraak-maken"
+                  className="inline-flex items-center px-6 py-3 border border-white/30 rounded-full text-base font-medium text-white bg-white/10 hover:bg-white/20 transition-colors duration-200"
+                >
+                  Afspraak maken
+                  <ArrowUpRight className="ml-2 w-4 h-4" />
+                </Link>
               </div>
             </div>
           </div>
