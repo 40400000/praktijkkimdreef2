@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 export default function Footer() {
   const openingHours = [
@@ -9,18 +10,33 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-[#899B90] border-t border-white/20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+    <footer className="mt-8 bg-sage rounded-t-[2.5rem]">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-8 py-14 lg:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr] gap-10 lg:gap-12">
           
+          {/* Merk */}
+          <div className="space-y-5">
+            <p className="font-[family-name:var(--font-display)] text-2xl font-light text-white">Praktijk Kim Dreef</p>
+            <p className="text-base text-white/90 leading-relaxed max-w-xs">
+              Praktijk voor orthomoleculaire therapie en homeopathie voor mens &amp; dier.
+            </p>
+            <Link
+              href="/afspraak-maken"
+              className="inline-flex items-center px-5 py-2.5 rounded-full text-base font-medium text-sage-dark bg-white hover:bg-sage-50 transition-colors duration-200"
+            >
+              Afspraak maken
+              <ArrowUpRight className="ml-2 w-4 h-4" />
+            </Link>
+          </div>
+
           {/* Openingstijden */}
           <div className="space-y-6">
-            <h3 className="text-xl font-medium text-white">Openingstijden</h3>
+            <h3 className="text-xl font-normal text-white">Openingstijden</h3>
             <div className="space-y-3">
               {openingHours.map((item) => (
                 <div key={item.day} className="flex justify-between text-base">
                   <span className="text-white/90">{item.day}:</span>
-                  <span className={`font-medium ${item.hours === "Gesloten" ? "text-white/70" : "text-white"}`}>
+                  <span className={`font-medium ${item.hours === "Gesloten" ? "text-white/80" : "text-white"}`}>
                     {item.hours}
                   </span>
                 </div>
@@ -30,7 +46,7 @@ export default function Footer() {
 
           {/* Praktijkgegevens */}
           <div className="space-y-6">
-            <h3 className="text-xl font-medium text-white">Praktijkgegevens</h3>
+            <h3 className="text-xl font-normal text-white">Praktijkgegevens</h3>
             <div className="space-y-4 text-base text-white/90">
               <div>
                 <p>Het Schip 237</p>
@@ -57,7 +73,7 @@ export default function Footer() {
 
           {/* Behandelingen & Praktijkinformatie */}
           <div className="space-y-6">
-            <h3 className="text-xl font-medium text-white">Behandelingen</h3>
+            <h3 className="text-xl font-normal text-white">Behandelingen</h3>
             <div className="space-y-4">
               <Link 
                 href="/orthomoleculair" 
@@ -79,7 +95,7 @@ export default function Footer() {
               </Link>
             </div>
             
-            <h3 className="text-xl font-medium text-white">Praktijkinformatie</h3>
+            <h3 className="text-xl font-normal text-white">Praktijkinformatie</h3>
             <div className="space-y-4">
               <Link 
                 href="/tarieven" 
@@ -93,12 +109,6 @@ export default function Footer() {
               >
                 Contact
               </Link>
-              <Link 
-                href="/afspraak-maken" 
-                className="block text-base text-white/90 hover:text-white transition-colors duration-200"
-              >
-                Afspraak maken
-              </Link>
             </div>
           </div>
 
@@ -107,35 +117,35 @@ export default function Footer() {
         {/* Association Logos */}
         <div className="mt-12 pt-8 border-t border-white/20">
           <div className="flex flex-col items-center space-y-8">
-            <h4 className="text-base font-medium text-white uppercase tracking-wide">
+            <h4 className="text-sm font-medium text-white/90 uppercase tracking-[0.2em]">
               Aangesloten bij
             </h4>
-            <div className="flex flex-wrap justify-center items-center gap-12 lg:gap-16">
-              <div className="h-16 w-auto">
+            <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6">
+              <div className="flex h-20 items-center rounded-2xl bg-white px-5 py-3 shadow-sm">
                 <Image
                   src="/footer_logos/nwp_logo.png"
                   alt="NWP - Nederlandse Werkgroep Fytotherapie"
                   width={120}
                   height={64}
-                  className="h-16 w-auto object-contain opacity-70 hover:opacity-100 transition-opacity duration-200"
+                  className="h-14 w-auto object-contain"
                 />
               </div>
-              <div className="h-16 w-auto">
+              <div className="flex h-20 items-center rounded-2xl bg-white px-5 py-3 shadow-sm">
                 <Image
                   src="/footer_logos/rbcz_logo.jpg"
                   alt="RBCZ - Register Beroepsbeoefenaren Complementaire Zorg"
                   width={120}
                   height={64}
-                  className="h-16 w-auto object-contain opacity-70 hover:opacity-100 transition-opacity duration-200"
+                  className="h-14 w-auto object-contain"
                 />
               </div>
-              <div className="h-16 w-auto">
+              <div className="flex h-20 items-center rounded-2xl bg-white px-5 py-3 shadow-sm">
                 <Image
                   src="/footer_logos/bkhd_logo.png"
                   alt="BKHD - Beroepsvereniging Klassiek Homeopathische Dierenartsen"
                   width={120}
                   height={64}
-                  className="h-16 w-auto object-contain opacity-70 hover:opacity-100 transition-opacity duration-200"
+                  className="h-14 w-auto object-contain"
                 />
               </div>
             </div>
@@ -148,18 +158,18 @@ export default function Footer() {
             <div className="flex space-x-6">
               <Link 
                 href="/algemene-voorwaarden" 
-                className="text-sm text-white/70 hover:text-white transition-colors duration-200"
+                className="text-sm text-white/85 hover:text-white transition-colors duration-200"
               >
                 Algemene voorwaarden
               </Link>
               <Link 
                 href="/privacy-policy" 
-                className="text-sm text-white/70 hover:text-white transition-colors duration-200"
+                className="text-sm text-white/85 hover:text-white transition-colors duration-200"
               >
                 Privacy Policy
               </Link>
             </div>
-            <p className="text-center text-base text-white/90">
+            <p className="text-center text-sm text-white/85">
               © {new Date().getFullYear()} Praktijk Kim Dreef. Alle rechten voorbehouden.
             </p>
           </div>

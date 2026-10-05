@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Praktijk voor orthomoleculaire therapie en homeopathie voor mens en dier",
     start_url: "/",
     display: "standalone",
-    background_color: "#F4F4F1",
-    theme_color: "#899B90",
+    background_color: "#f4f4f1",
+    theme_color: "#66796e",
     icons: [
       {
         src: "/web-app-manifest-192x192.png",

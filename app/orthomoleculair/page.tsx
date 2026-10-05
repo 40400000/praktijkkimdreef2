@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { Metadata } from "next";
+import PageHero from "../../components/page-hero";
 
 export const metadata: Metadata = {
   title: "Orthomoleculaire therapie",
@@ -32,36 +32,12 @@ export default function OrthomoleculairPage() {
 
   return (
     <main className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative py-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl p-12 lg:p-16 bg-[#899B90]">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              {/* Left Content */}
-              <div className="space-y-6">
-                <h1 className="text-4xl lg:text-5xl font-light text-white leading-tight">
-                  Orthomoleculaire therapie
-                </h1>
-                <p className="text-xl text-white/90 leading-relaxed">
-                  Tekorten in het lichaam die voor allerlei klachten zorgen weer aanvullen met gezonde voeding, beweging en supplementen.
-                </p>
-              </div>
-              
-              {/* Right Content - Image */}
-              <div className="relative">
-                <div className="relative rounded-2xl overflow-hidden aspect-[4/3]">
-                  <Image
-                    src="/ortho.jpeg"
-                    alt="Orthomoleculaire therapie"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="Behandeling"
+        title="Orthomoleculaire therapie"
+        intro="Tekorten in het lichaam die voor allerlei klachten zorgen weer aanvullen met gezonde voeding, beweging en supplementen."
+        image={{ src: "/ortho.jpeg", alt: "Orthomoleculaire therapie" }}
+      />
 
       {/* Content Section */}
       <section className="py-16 lg:py-20">
@@ -89,13 +65,13 @@ export default function OrthomoleculairPage() {
                   zwangerschap, het voorkomen van klachten die ontstaan door tekorten in de voeding.
                 </p>
 
-                <div className="bg-[#899B90] rounded-2xl p-6 lg:p-8">
+                <div className="bg-sage rounded-2xl p-6 lg:p-8">
                   <h3 className="text-xl font-medium text-white mb-6">Geschikt voor chronische klachten zoals:</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {klachten.map((item) => (
                       <div key={item} className="flex items-center">
                         <div className="w-2 h-2 bg-white/70 rounded-full mr-3 flex-shrink-0"></div>
-                        <span className="text-white/90">{item}</span>
+                        <span className="text-white">{item}</span>
                       </div>
                     ))}
                   </div>
