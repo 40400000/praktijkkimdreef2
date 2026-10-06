@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Cal from "@calcom/embed-react";
 import { Clock, ArrowLeft, Mail } from "lucide-react";
+import PageHero from "../../components/page-hero";
 
 const consultTypes = [
   {
@@ -29,22 +30,10 @@ export default function AfspraakMakenPage() {
 
   return (
     <main className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative py-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl p-8 lg:p-12 bg-[#899B90]">
-            <div className="text-center">
-              <h1 className="text-3xl lg:text-4xl font-light text-white leading-tight mb-4">
-                Afspraak maken
-              </h1>
-              <p className="text-lg text-white/90 leading-relaxed max-w-2xl mx-auto">
-                Kies het type consult en plan direct een afspraak in op een
-                moment dat u uitkomt
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        title="Afspraak maken"
+        intro="Kies het type consult en plan direct een afspraak in op een moment dat u uitkomt"
+      />
 
       {/* Consult Selection / Booking */}
       <section className="py-12 lg:py-16">
@@ -59,16 +48,16 @@ export default function AfspraakMakenPage() {
                 <button
                   key={consult.id}
                   onClick={() => setSelected(consult.id)}
-                  className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100 text-left hover:border-[#899B90]/40 hover:shadow-md transition-all duration-200 group cursor-pointer flex flex-col"
+                  className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100 text-left hover:border-sage/40 hover:shadow-md transition-all duration-200 group cursor-pointer flex flex-col"
                 >
-                  <h3 className="text-xl font-medium text-gray-900 mb-3 group-hover:text-[#899B90] transition-colors duration-200">
+                  <h3 className="text-xl font-medium text-gray-900 mb-3 group-hover:text-sage transition-colors duration-200">
                     {consult.title}
                   </h3>
                   <p className="text-gray-600 leading-relaxed flex-1">
                     {consult.description}
                   </p>
                   <div className="flex items-center text-sm text-gray-500 mt-4 pt-4 border-t border-gray-100">
-                    <Clock className="w-4 h-4 mr-2 text-[#899B90]" />
+                    <Clock className="w-4 h-4 mr-2 text-sage" />
                     {consult.duration}
                   </div>
                 </button>
@@ -80,7 +69,7 @@ export default function AfspraakMakenPage() {
               Of mail naar{" "}
               <a
                 href="mailto:info@praktijkkimdreef.nl"
-                className="text-[#899B90] hover:text-[#6d7c74] transition-colors duration-200 underline underline-offset-2"
+                className="text-sage hover:text-sage-dark transition-colors duration-200 underline underline-offset-2"
               >
                 info@praktijkkimdreef.nl
               </a>
