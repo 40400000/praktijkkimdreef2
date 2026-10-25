@@ -88,6 +88,12 @@ export default function Footer() {
                 Homeopathie
               </Link>
               <Link 
+                href="/mycotherapie" 
+                className="block text-base text-white/90 hover:text-white transition-colors duration-200"
+              >
+                Mycotherapie
+              </Link>
+              <Link 
                 href="/qest" 
                 className="block text-base text-white/90 hover:text-white transition-colors duration-200"
               >

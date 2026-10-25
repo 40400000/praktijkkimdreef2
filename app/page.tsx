@@ -17,6 +17,13 @@ const behandelingen = [
     tag: "Voor mensen",
     text: "Tekorten in het lichaam die voor klachten zorgen weer aanvullen met voeding, beweging en supplementen.",
   },
+  {
+    title: "Mycotherapie",
+    href: "/mycotherapie",
+    image: "/myco.jpg",
+    tag: "Medicinale paddenstoelen",
+    text: "Het gebruik van paddenstoelen of extracten uit paddenstoelen bij het voorkomen of genezen van aandoeningen.",
+  },
 ];
 
 const opleidingen = [
@@ -94,28 +101,28 @@ export default function Home() {
             <h2 className="mt-3 text-4xl lg:text-5xl font-light text-gray-900">Behandelingen</h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {behandelingen.map((b) => (
               <Link
                 key={b.href}
                 href={b.href}
-                className="group bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-black/5 hover:-translate-y-1 transition-all duration-300"
+                className="group flex flex-col bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-black/5 hover:-translate-y-1 transition-all duration-300"
               >
-                <div className="relative h-60 lg:h-80 overflow-hidden">
+                <div className="relative h-60 lg:h-64 overflow-hidden">
                   <Image
                     src={b.image}
                     alt={b.title}
                     fill
-                    sizes="(min-width: 1024px) 50vw, 100vw"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   <span className="absolute top-4 left-4 rounded-full bg-white/90 backdrop-blur px-3 py-1 text-sm font-medium text-sage-dark">
                     {b.tag}
                   </span>
                 </div>
-                <div className="p-7 lg:p-9">
-                  <h3 className="text-2xl lg:text-3xl font-light text-gray-900 mb-3">{b.title}</h3>
-                  <p className="text-gray-600 text-lg leading-relaxed mb-6">{b.text}</p>
+                <div className="p-7 flex-1 flex flex-col">
+                  <h3 className="text-2xl font-light text-gray-900 mb-3">{b.title}</h3>
+                  <p className="text-gray-600 text-lg leading-relaxed mb-6 flex-1">{b.text}</p>
                   <span className="inline-flex items-center text-sage-dark font-medium">
                     Lees meer
                     <ArrowUpRight className="ml-2 w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

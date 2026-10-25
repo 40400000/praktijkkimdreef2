@@ -9,6 +9,7 @@ import { ArrowUpRight, ChevronDown, Menu, X } from "lucide-react";
 const navigationLinks = [
   { name: "Orthomoleculair", href: "/orthomoleculair" },
   { name: "Homeopathie", href: "/homeopathie" },
+  { name: "Mycotherapie", href: "/mycotherapie" },
   { name: "Qest4", href: "/qest" },
 ];
 
@@ -86,7 +87,7 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-6 xl:gap-8">
             {navigationLinks.map((link) => (
               <Link
                 key={link.name}
@@ -134,7 +135,7 @@ export default function Navbar() {
           </div>
 
           {/* Desktop CTA Button */}
-          <div className="hidden md:flex items-center">
+          <div className="hidden lg:flex items-center">
             <Link
               href="/afspraak-maken"
               className="group inline-flex items-center px-6 py-2.5 rounded-full text-lg font-medium text-white bg-sage hover:bg-sage-dark shadow-sm transition-colors duration-200"
@@ -145,7 +146,7 @@ export default function Navbar() {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="inline-flex items-center justify-center p-2 rounded-xl text-gray-700 hover:text-gray-900 hover:bg-white transition-colors duration-200"
@@ -162,7 +163,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       <div
         id="mobile-menu"
-        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
           isMobileMenuOpen ? "max-h-[32rem] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
