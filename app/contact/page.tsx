@@ -19,6 +19,13 @@ export default function ContactPage() {
     "2026-10-30",
     "2026-11-07",
     "2026-12-05",
+    "2027-01-09",
+    "2027-02-06",
+    "2027-03-06",
+    "2027-04-03",
+    "2027-06-05",
+    "2027-09-04",
+    "2027-11-06",
   ];
 
   // Alleen komende zaterdagen tonen (pagina wordt dagelijks opnieuw opgebouwd)
@@ -53,7 +60,7 @@ export default function ContactPage() {
                     Na mijn studie HBO-Verpleegkunde heb ik een aantal jaren in het algemeen ziekenhuis gewerkt. Omdat mijn hart toch meer uit ging naar de dieren besloot ik de opleiding tot Klassiek Homeopaat voor dieren te gaan doen.
                   </p>
                   <p>
-                    In de tussentijd deed ik ook de opleiding tot Celzouttherapeut. De afgelopen jaren heb ik een mooie praktijk opgezet waarin ik mensen en dieren help met zowel chronische als acute klachten! Inmiddels ben ik ook afgestudeerd in de Orthomoleculaire Geneeskunde.
+                    In de tussentijd deed ik ook de opleiding tot Celzouttherapeut. De afgelopen jaren heb ik een mooie praktijk opgezet waarin ik mensen en dieren help met zowel chronische als acute klachten! Inmiddels ben ik ook afgestudeerd in de Orthomoleculaire Geneeskunde en de Mycotherapie.
                   </p>
                   <p>
                     In mijn praktijk voor mens en dier is geen klacht te groot of te klein. Samen gaan we op zoek naar antwoorden en daarvoor gebruik ik de Qest 4, vroeger de AsyraPro. Dit is een geavanceerd apparaat dat mij helpt te begrijpen wat er allemaal speelt in jouw lichaam.

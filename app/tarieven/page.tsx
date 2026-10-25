@@ -23,7 +23,7 @@ export default function TarievenPage() {
     {
       id: "kwaliteit",
       title: "Kwaliteit en opleiding",
-      content: "Therapeuten aangesloten bij de NWP hebben een gedegen opleiding doorlopen, van minstens 4-5 jaar. De vereniging staat in voor de kwaliteit van haar aangesloten leden en ziet toe op bijscholing, beroepsethiek en praktijkvoering. De vereniging is aangesloten bij het RBCZ, een klachtencommissie en heeft een eigen tuchtcollege."
+      content: "Therapeuten aangesloten bij de NWP hebben een gedegen opleiding doorlopen, van minstens 4-5 jaar. De vereniging staat in voor de kwaliteit van haar aangesloten leden en ziet toe op bijscholing, beroepsethiek en praktijkvoering. De vereniging is aangesloten bij het NAP, een klachtencommissie en heeft een eigen tuchtcollege."
     },
     {
       id: "betaling",

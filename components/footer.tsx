@@ -138,8 +138,8 @@ export default function Footer() {
               </div>
               <div className="flex h-20 items-center rounded-2xl bg-white px-5 py-3 shadow-sm">
                 <Image
-                  src="/footer_logos/rbcz_logo.jpg"
-                  alt="RBCZ - Register Beroepsbeoefenaren Complementaire Zorg"
+                  src="/footer_logos/nap_logo.png"
+                  alt="Koepel NAP - koepelorganisatie complementaire zorg"
                   width={120}
                   height={64}
                   className="h-14 w-auto object-contain"

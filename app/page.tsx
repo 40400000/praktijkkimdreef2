@@ -7,8 +7,8 @@ const behandelingen = [
     title: "Homeopathie",
     href: "/homeopathie",
     image: "/homeo.jpg",
-    tag: "Voor dieren",
-    text: "De klassieke veterinaire homeopathie is een geneeswijze voor dieren die berust op vele natuurwetten.",
+    tag: "Voor mens en dier",
+    text: "De klassieke homeopathie is een geneeswijze voor mens en dier die berust op vele natuurwetten.",
   },
   {
     title: "Orthomoleculaire therapie",
@@ -31,6 +31,7 @@ const opleidingen = [
   "Klassiek Homeopaat voor dieren",
   "Celzouttherapeut",
   "Orthomoleculaire Geneeskunde",
+  "Mycotherapie",
 ];
 
 export default function Home() {
