@@ -89,16 +89,20 @@ export default function AfspraakMakenPage() {
               ))}
             </div>
 
-            <p className="text-center text-gray-500 text-sm flex items-center justify-center gap-2">
-              <Mail className="w-4 h-4" />
-              Of mail naar{" "}
-              <a
-                href="mailto:info@praktijkkimdreef.nl"
-                className="text-sage hover:text-sage-dark transition-colors duration-200 underline underline-offset-2"
-              >
-                info@praktijkkimdreef.nl
-              </a>
-            </p>
+            <a
+              href="mailto:info@praktijkkimdreef.nl"
+              className="group mt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 rounded-3xl bg-white border border-gray-100 shadow-sm px-6 py-6 text-center hover:border-sage/40 hover:shadow-md transition-all duration-200"
+            >
+              <span className="flex items-center justify-center w-12 h-12 rounded-xl bg-sage-50 flex-shrink-0">
+                <Mail className="w-6 h-6 text-sage" />
+              </span>
+              <span className="text-lg lg:text-xl text-gray-700">
+                Liever mailen? Mail naar{" "}
+                <span className="block sm:inline whitespace-nowrap font-medium text-sage-dark underline underline-offset-4 decoration-sage/40 group-hover:decoration-sage-dark">
+                  info@praktijkkimdreef.nl
+                </span>
+              </span>
+            </a>
           </div>
         ) : (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
