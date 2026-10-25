@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import Cal from "@calcom/embed-react";
-import { Clock, ArrowLeft, Mail } from "lucide-react";
+import { useEffect, useState } from "react";
+import Cal, { getCalApi } from "@calcom/embed-react";
+import { Clock, ArrowLeft, Mail, CheckCircle2, Plus } from "lucide-react";
 import PageHero from "../../components/page-hero";
 
 const consultTypes = [
@@ -26,7 +26,32 @@ const consultTypes = [
 
 export default function AfspraakMakenPage() {
   const [selected, setSelected] = useState<string | null>(null);
+  const [isBooked, setIsBooked] = useState(false);
   const selectedConsult = consultTypes.find((c) => c.id === selected);
+
+  // Na een geslaagde boeking een knop tonen om direct nog een consult in te plannen
+  useEffect(() => {
+    if (!selected) return;
+    let active = true;
+    (async () => {
+      const cal = await getCalApi({ namespace: selected });
+      cal("on", {
+        action: "bookingSuccessfulV2",
+        callback: () => {
+          if (active) setIsBooked(true);
+        },
+      });
+    })();
+    return () => {
+      active = false;
+    };
+  }, [selected]);
+
+  const kiesConsult = (id: string | null) => {
+    setIsBooked(false);
+    setSelected(id);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <main className="min-h-screen">
@@ -47,7 +72,7 @@ export default function AfspraakMakenPage() {
               {consultTypes.map((consult) => (
                 <button
                   key={consult.id}
-                  onClick={() => setSelected(consult.id)}
+                  onClick={() => kiesConsult(consult.id)}
                   className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100 text-left hover:border-sage/40 hover:shadow-md transition-all duration-200 group cursor-pointer flex flex-col"
                 >
                   <h3 className="text-xl font-medium text-gray-900 mb-3 group-hover:text-sage transition-colors duration-200">
@@ -78,15 +103,39 @@ export default function AfspraakMakenPage() {
         ) : (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             <button
-              onClick={() => setSelected(null)}
+              onClick={() => kiesConsult(null)}
               className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors duration-200 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Ander consult kiezen
             </button>
 
+            {isBooked && (
+              <div className="rounded-3xl bg-sage p-6 lg:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-5 animate-in fade-in slide-in-from-top-2 duration-500">
+                <div className="flex items-start gap-4">
+                  <CheckCircle2 className="w-7 h-7 text-white flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h2 className="text-2xl font-light text-white">Uw afspraak is aangevraagd</h2>
+                    <p className="text-white mt-1">
+                      U ontvangt hierover een e-mail. Wilt u nog een consult inplannen, bijvoorbeeld voor een
+                      ander dier of een vervolgafspraak?
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => kiesConsult(null)}
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-full text-base font-medium text-sage-dark bg-white hover:bg-sage-50 transition-colors duration-200 cursor-pointer flex-shrink-0"
+                >
+                  <Plus className="mr-2 w-5 h-5" />
+                  Nog een consult inplannen
+                </button>
+              </div>
+            )}
+
             <div className="bg-white rounded-3xl p-2 shadow-sm border border-gray-100 overflow-hidden">
               <Cal
+                key={selected}
+                namespace={selected}
                 calLink={selectedConsult!.calLink}
                 config={{
                   layout: "month_view",
