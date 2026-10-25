@@ -144,6 +144,8 @@ export default function AfspraakMakenPage() {
                 config={{
                   layout: "month_view",
                   theme: "light",
+                  // Telefoonveld standaard op Nederland (+31) i.p.v. land op basis van locatie
+                  attendeePhoneNumber: "+31",
                 }}
                 style={{
                   width: "100%",
