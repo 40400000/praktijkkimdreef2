@@ -1,10 +1,13 @@
 import { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import PageHero from "../../components/page-hero";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Qest 4",
-  description: "Geavanceerde diagnose en gezondheidscheck met het Qest 4 systeem. Snel en pijnloos inzicht in uw gezondheidsstatus zonder bloedafname.",
-};
+  description:
+    "Geavanceerde diagnose en gezondheidscheck met het Qest 4 systeem. Snel en pijnloos inzicht in uw gezondheidsstatus zonder bloedafname.",
+  path: "/qest",
+});
 
 export default function QestPage() {
   const voordelen: string[] = [

@@ -1,10 +1,13 @@
 import { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import PageHero from "../../components/page-hero";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Algemene Voorwaarden",
-  description: "Algemene voorwaarden van Praktijk Kim Dreef, praktijk voor orthomoleculaire therapie en homeopathie in Apeldoorn.",
-};
+  description:
+    "Algemene voorwaarden van Praktijk Kim Dreef, praktijk voor orthomoleculaire therapie en homeopathie in Apeldoorn.",
+  path: "/algemene-voorwaarden",
+});
 
 export default function AlgemeneVoorwaardenPage() {
   return (

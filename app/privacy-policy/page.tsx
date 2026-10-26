@@ -1,10 +1,13 @@
 import { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import PageHero from "../../components/page-hero";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Privacy Policy",
-  description: "Privacy policy van Praktijk Kim Dreef. Hoe wij omgaan met uw gegevens.",
-};
+  description:
+    "Privacy policy van Praktijk Kim Dreef. Hoe wij omgaan met uw gegevens.",
+  path: "/privacy-policy",
+});
 
 export default function PrivacyPolicyPage() {
   return (

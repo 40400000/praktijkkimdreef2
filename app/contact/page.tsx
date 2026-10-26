@@ -2,12 +2,15 @@ import { Mail, Phone, MapPin, Clock, Calendar, ArrowUpRight } from "lucide-react
 import Image from "next/image";
 import Link from "next/link";
 import { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import PageHero from "../../components/page-hero";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Contact & Over mij",
-  description: "Neem contact op met Praktijk Kim Dreef voor vragen over orthomoleculaire therapie en homeopathie. Gevestigd in Apeldoorn.",
-};
+  description:
+    "Neem contact op met Praktijk Kim Dreef voor vragen over orthomoleculaire therapie en homeopathie. Gevestigd in Apeldoorn.",
+  path: "/contact",
+});
 
 export const revalidate = 86400;
 

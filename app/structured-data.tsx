@@ -1,23 +1,29 @@
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "../lib/site";
+
 export function generateLocalBusinessSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "HealthAndBeautyBusiness",
-    "name": "Praktijk Kim Dreef",
-    "description": "Praktijk voor orthomoleculaire therapie en homeopathie voor mens en dier in Apeldoorn",
-    "url": process.env.NEXT_PUBLIC_SITE_URL || "https://praktijkkimdreef.nl",
+    "@id": `${SITE_URL}/#praktijk`,
+    "name": SITE_NAME,
+    "description": SITE_DESCRIPTION,
+    "url": SITE_URL,
+    "image": `${SITE_URL}/og-image.jpg`,
+    "logo": `${SITE_URL}/web-app-manifest-512x512.png`,
     "telephone": "+31615241539",
     "email": "info@praktijkkimdreef.nl",
+    "founder": {
+      "@type": "Person",
+      "name": "Kim Dreef"
+    },
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "Het Schip 237",
       "addressLocality": "Apeldoorn",
-      "postalCode": "7325NM",
+      "postalCode": "7325 NM",
       "addressCountry": "NL"
     },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "addressCountry": "NL"
-    },
+    "areaServed": "Apeldoorn",
     "openingHoursSpecification": [
       {
         "@type": "OpeningHoursSpecification",
@@ -26,8 +32,8 @@ export function generateLocalBusinessSchema() {
         "closes": "18:00"
       }
     ],
-    "priceRange": "€67,50 - €105,-",
-    "sameAs": []
+    "knowsAbout": ["Orthomoleculaire therapie", "Homeopathie", "Mycotherapie", "Qest4"],
+    "priceRange": "€60 - €105"
   };
 }
 
@@ -35,9 +41,10 @@ export function generateOrganizationSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "Praktijk Kim Dreef",
-    "url": process.env.NEXT_PUBLIC_SITE_URL || "https://praktijkkimdreef.nl",
-    "logo": `${process.env.NEXT_PUBLIC_SITE_URL || "https://praktijkkimdreef.nl"}/logopraktijkkimdreef.svg`,
+    "@id": `${SITE_URL}/#organisatie`,
+    "name": SITE_NAME,
+    "url": SITE_URL,
+    "logo": `${SITE_URL}/web-app-manifest-512x512.png`,
     "contactPoint": {
       "@type": "ContactPoint",
       "telephone": "+31615241539",
@@ -45,5 +52,19 @@ export function generateOrganizationSchema() {
       "contactType": "customer service",
       "availableLanguage": "Dutch"
     }
+  };
+}
+
+// Google gebruikt dit om de sitenaam ("Praktijk Kim Dreef") in de zoekresultaten te tonen.
+export function generateWebSiteSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
+    "name": SITE_NAME,
+    "alternateName": ["Kim Dreef", "praktijkkimdreef.nl"],
+    "url": `${SITE_URL}/`,
+    "inLanguage": "nl-NL",
+    "publisher": { "@id": `${SITE_URL}/#organisatie` }
   };
 }

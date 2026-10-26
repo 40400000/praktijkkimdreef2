@@ -1,12 +1,15 @@
 import { Euro, Phone, Car } from "lucide-react";
 import Accordion from "../../components/accordion";
 import { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import PageHero from "../../components/page-hero";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Tarieven",
-  description: "Transparante prijzen voor orthomoleculaire therapie en homeopathie behandelingen. Veel behandelingen worden vergoed door zorgverzekeraars.",
-};
+  description:
+    "Transparante prijzen voor orthomoleculaire therapie en homeopathie behandelingen. Veel behandelingen worden vergoed door zorgverzekeraars.",
+  path: "/tarieven",
+});
 
 export default function TarievenPage() {
   const orthomoleculairTarieven = [

@@ -1,14 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import { ArrowUpRight } from "lucide-react";
 import PageHero from "../../components/page-hero";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Mycotherapie",
   description:
     "Mycotherapie: het gebruik van medicinale paddenstoelen en paddenstoelextracten bij het voorkomen of behandelen van o.a. allergieën, auto-immuunziekten, chronische vermoeidheid en ontstekingen.",
-};
+  path: "/mycotherapie",
+});
 
 export default function MycotherapiePage() {
   const werkzameStoffen = [

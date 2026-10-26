@@ -1,10 +1,13 @@
 import { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import PageHero from "../../components/page-hero";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Homeopathie",
-  description: "Klassieke veterinaire homeopathie voor dieren. Behandeling van chronische en acute klachten volgens natuurwetten.",
-};
+  description:
+    "Klassieke veterinaire homeopathie voor dieren. Behandeling van chronische en acute klachten volgens natuurwetten.",
+  path: "/homeopathie",
+});
 
 export default function HomeopathiePage() {
   return (
