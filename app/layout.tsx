@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Figtree, Fraunces } from "next/font/google";
 import "./globals.css";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import { generateLocalBusinessSchema, generateOrganizationSchema } from "./structured-data";
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const figtree = Figtree({
+  variable: "--font-figtree",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
+  axes: ["opsz"],
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://praktijkkimdreef.nl";
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
     template: "%s | Praktijk Kim Dreef",
   },
   description: "Praktijk voor orthomoleculaire therapie en homeopathie voor mens en dier. Gespecialiseerd in natuurlijke geneeswijzen en Qest4 diagnostiek.",
-  keywords: ["orthomoleculaire therapie", "homeopathie", "natuurlijke geneeswijze", "Qest4", "Kim Dreef", "Apeldoorn", "veterinaire homeopathie"],
+  keywords: ["orthomoleculaire therapie", "homeopathie", "natuurlijke geneeswijze", "Qest4", "Kim Dreef", "Apeldoorn", "veterinaire homeopathie", "mycotherapie", "medicinale paddenstoelen"],
   authors: [{ name: "Kim Dreef" }],
   creator: "Kim Dreef",
   openGraph: {
@@ -70,7 +71,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="nl">
+    <html lang="nl" className={`${figtree.variable} ${fraunces.variable}`}>
       <head>
         <script
           type="application/ld+json"
@@ -85,9 +86,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#F4F4F1]`}
-      >
+      <body className="antialiased">
         <Navbar />
         {children}
         <Footer />

@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import PageHero from "../../components/page-hero";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -8,18 +9,7 @@ export const metadata: Metadata = {
 export default function PrivacyPolicyPage() {
   return (
     <main className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative py-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl p-8 lg:p-12 bg-[#899B90]">
-            <div className="text-center">
-              <h1 className="text-3xl lg:text-4xl font-light text-white leading-tight mb-4">
-                Privacy Policy
-              </h1>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PageHero title="Privacy Policy" />
 
       <section className="py-12 lg:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

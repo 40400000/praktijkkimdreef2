@@ -1,6 +1,7 @@
 import { Euro, Phone, Car } from "lucide-react";
 import Accordion from "../../components/accordion";
 import { Metadata } from "next";
+import PageHero from "../../components/page-hero";
 
 export const metadata: Metadata = {
   title: "Tarieven",
@@ -22,7 +23,7 @@ export default function TarievenPage() {
     {
       id: "kwaliteit",
       title: "Kwaliteit en opleiding",
-      content: "Therapeuten aangesloten bij de NWP hebben een gedegen opleiding doorlopen, van minstens 4-5 jaar. De vereniging staat in voor de kwaliteit van haar aangesloten leden en ziet toe op bijscholing, beroepsethiek en praktijkvoering. De vereniging is aangesloten bij het RBCZ, een klachtencommissie en heeft een eigen tuchtcollege."
+      content: "Therapeuten aangesloten bij de NWP hebben een gedegen opleiding doorlopen, van minstens 4-5 jaar. De vereniging staat in voor de kwaliteit van haar aangesloten leden en ziet toe op bijscholing, beroepsethiek en praktijkvoering. De vereniging is aangesloten bij het NAP, een klachtencommissie en heeft een eigen tuchtcollege."
     },
     {
       id: "betaling",
@@ -48,21 +49,11 @@ export default function TarievenPage() {
 
   return (
     <main className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative py-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl p-8 lg:p-12 bg-[#899B90]">
-            <div className="text-center">
-              <h1 className="text-3xl lg:text-4xl font-light text-white leading-tight mb-4">
-                Tarieven
-              </h1>
-              <p className="text-lg text-white/90 leading-relaxed max-w-2xl mx-auto">
-                Transparante prijzen voor orthomoleculaire therapie en homeopathie behandelingen
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="Praktijkinformatie"
+        title="Tarieven"
+        intro="Transparante prijzen voor orthomoleculaire therapie en homeopathie behandelingen"
+      />
 
       {/* Pricing Sections */}
       <section className="py-12 lg:py-16">
@@ -71,7 +62,7 @@ export default function TarievenPage() {
           {/* Orthomoleculaire Therapie */}
           <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100">
             <div className="flex items-center mb-6">
-              <Euro className="w-6 h-6 text-[#899B90] mr-3" />
+              <Euro className="w-6 h-6 text-sage mr-3" />
               <h2 className="text-2xl font-light text-gray-900">Orthomoleculaire therapie</h2>
             </div>
             
@@ -84,7 +75,7 @@ export default function TarievenPage() {
               ))}
             </div>
             
-            <div className="bg-[#f8f9fa] rounded-xl p-4 mb-6">
+            <div className="bg-sage-50 rounded-xl p-4 mb-6">
               <p className="text-gray-600 text-sm leading-relaxed">
  Genoemde bedragen zijn exclusief benodigde suppletie.
               </p>
@@ -99,7 +90,7 @@ export default function TarievenPage() {
           {/* Homeopathie (dieren) */}
           <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100">
             <div className="flex items-center mb-6">
-              <Euro className="w-6 h-6 text-[#899B90] mr-3" />
+              <Euro className="w-6 h-6 text-sage mr-3" />
               <h2 className="text-2xl font-light text-gray-900">Homeopathie (dieren)</h2>
             </div>
             
@@ -130,10 +121,10 @@ export default function TarievenPage() {
             </div>
 
             {/* Huisbezoeken info */}
-            <div className="bg-[#899B90] rounded-xl p-5 mb-5">
+            <div className="bg-sage rounded-xl p-5 mb-5">
               <div className="flex items-start">
                 <Car className="w-5 h-5 text-white mr-3 mt-1 flex-shrink-0" />
-                <div className="text-white/90">
+                <div className="text-white">
                   <h4 className="text-base font-medium text-white mb-2">Huisbezoeken</h4>
                   <p className="text-sm leading-relaxed mb-2">
                     Voor een consult voor homeopathie kunt u gemakkelijk met uw hond bij mij in de praktijk terecht. 
@@ -151,7 +142,7 @@ export default function TarievenPage() {
           {/* Annuleringsbeleid */}
           <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100">
             <h2 className="text-2xl font-light text-gray-900 mb-6">Annuleringsbeleid</h2>
-            <div className="bg-[#f8f9fa] rounded-xl p-5">
+            <div className="bg-sage-50 rounded-xl p-5">
               <p className="text-gray-700 text-sm leading-relaxed mb-3">
                 Bij het geen doorgang kunnen vinden van de afspraak wordt er 50% van het tarief van de voorgenomen
                 behandeling in rekening gebracht, tenzij de afspraak minimaal 48 uur van te voren is afgezegd.
