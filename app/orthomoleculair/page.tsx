@@ -1,10 +1,13 @@
 import { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import PageHero from "../../components/page-hero";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Orthomoleculaire therapie",
-  description: "Behandeling van chronische klachten door tekorten aan te vullen met voeding, beweging en supplementen. Geschikt voor o.a. fibromyalgie, vermoeidheid en maag-darmklachten.",
-};
+  description:
+    "Behandeling van chronische klachten door tekorten aan te vullen met voeding, beweging en supplementen. Geschikt voor o.a. fibromyalgie, vermoeidheid en maag-darmklachten.",
+  path: "/orthomoleculair",
+});
 
 export default function OrthomoleculairPage() {
   const klachten: string[] = [

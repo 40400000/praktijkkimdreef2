@@ -3,7 +3,8 @@ import { Figtree, Fraunces } from "next/font/google";
 import "./globals.css";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
-import { generateLocalBusinessSchema, generateOrganizationSchema } from "./structured-data";
+import { generateLocalBusinessSchema, generateOrganizationSchema, generateWebSiteSchema } from "./structured-data";
+import { OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "../lib/site";
 const figtree = Figtree({
   variable: "--font-figtree",
   subsets: ["latin"],
@@ -15,39 +16,46 @@ const fraunces = Fraunces({
   axes: ["opsz"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://praktijkkimdreef.nl";
+const defaultTitle = `${SITE_NAME} | Orthomoleculaire therapie, homeopathie & mycotherapie in Apeldoorn`;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
+  applicationName: SITE_NAME,
   title: {
-    default: "Praktijk Kim Dreef - Orthomoleculaire therapie en homeopathie",
-    template: "%s | Praktijk Kim Dreef",
+    default: defaultTitle,
+    template: `%s | ${SITE_NAME}`,
   },
-  description: "Praktijk voor orthomoleculaire therapie en homeopathie voor mens en dier. Gespecialiseerd in natuurlijke geneeswijzen en Qest4 diagnostiek.",
-  keywords: ["orthomoleculaire therapie", "homeopathie", "natuurlijke geneeswijze", "Qest4", "Kim Dreef", "Apeldoorn", "veterinaire homeopathie", "mycotherapie", "medicinale paddenstoelen"],
+  description: SITE_DESCRIPTION,
+  keywords: [
+    "Praktijk Kim Dreef",
+    "Kim Dreef",
+    "orthomoleculaire therapie",
+    "homeopathie",
+    "mycotherapie",
+    "medicinale paddenstoelen",
+    "Qest4",
+    "natuurgeneeskunde",
+    "veterinaire homeopathie",
+    "Apeldoorn",
+  ],
   authors: [{ name: "Kim Dreef" }],
   creator: "Kim Dreef",
+  publisher: SITE_NAME,
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "nl_NL",
-    url: siteUrl,
-    title: "Praktijk Kim Dreef - Orthomoleculaire therapie en homeopathie",
-    description: "Praktijk voor orthomoleculaire therapie en homeopathie voor mens en dier.",
-    siteName: "Praktijk Kim Dreef",
-    images: [
-      {
-        url: "/opengraph-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Praktijk Kim Dreef",
-      },
-    ],
+    url: "/",
+    siteName: SITE_NAME,
+    title: defaultTitle,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Praktijk Kim Dreef - Orthomoleculaire therapie en homeopathie",
-    description: "Praktijk voor orthomoleculaire therapie en homeopathie voor mens en dier.",
-    images: ["/opengraph-image.png"],
+    title: defaultTitle,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE.url],
   },
   robots: {
     index: true,
@@ -83,6 +91,12 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(generateOrganizationSchema()),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(generateWebSiteSchema()),
           }}
         />
       </head>
